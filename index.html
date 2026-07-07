@@ -516,10 +516,10 @@
 <script>
   const SUPABASE_URL = "https://shuzyobfytegnlyulgdj.supabase.co";
   const SUPABASE_KEY = "sb_publishable_AHhrwdfio4wPM2kcUjdZ8w_DReukYdM";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   async function testConnexion() {
-    const { data, error } = await supabase.from('produits').select('*');
+    const { data, error } = await supabaseClient.from('produits').select('*');
     if (error) {
       console.error("Erreur de connexion Supabase :", error);
     } else {
