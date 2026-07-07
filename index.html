@@ -363,7 +363,22 @@
 
   /* ===================== RESPONSIVE ===================== */
   @media (max-width: 860px){
-    nav{ display:none; }
+    nav{
+      display:none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      flex-direction: column;
+      background: var(--cream);
+    }
+    nav.open{ display:flex; }
+    nav a{
+      border-top: 1px solid var(--line);
+    }
+    nav a:first-child{
+      border-top: none;
+    }
     .burger{ display:flex; }
     .hero-inner{ grid-template-columns: 1fr; text-align:center; }
     .hero p.lead{ margin: 0 auto 32px; }
@@ -393,7 +408,7 @@
       </span>
     </a>
 
-    <nav>
+    <nav id="mainNav">
       <a href="#boutique">Boutique</a>
       <a href="#sur-mesure">Sur mesure</a>
       <a href="#rendez-vous">Rendez-vous</a>
@@ -497,5 +512,21 @@
   </div>
 </footer>
 
+<script>
+  const burger = document.querySelector('.burger');
+  const mainNav = document.getElementById('mainNav');
+
+  burger.addEventListener('click', () => {
+    const isOpen = mainNav.classList.toggle('open');
+    burger.setAttribute('aria-expanded', isOpen);
+  });
+
+  mainNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mainNav.classList.remove('open');
+      burger.setAttribute('aria-expanded', 'false');
+    });
+  });
+</script>
 </body>
 </html>
