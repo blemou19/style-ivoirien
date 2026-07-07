@@ -512,6 +512,23 @@
   </div>
 </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  const SUPABASE_URL = "https://shuzyobfytegnlyulgdj.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_AHhrwdfio4wPM2kcUjdZ8w_DReukYdM";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function testConnexion() {
+    const { data, error } = await supabase.from('produits').select('*');
+    if (error) {
+      console.error("Erreur de connexion Supabase :", error);
+    } else {
+      console.log("Connexion Supabase OK, produits trouvés :", data.length);
+    }
+  }
+  testConnexion();
+</script>
+  
 <script>
   const burger = document.querySelector('.burger');
   const mainNav = document.getElementById('mainNav');
