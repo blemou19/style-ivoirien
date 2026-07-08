@@ -36,6 +36,25 @@ function selectionnerCategorie(categorie, chipElement) {
   chargerProduits();
 }
 
+function carteProduitHtml(p) {
+  const produitData = encodeURIComponent(JSON.stringify({
+    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
+  }));
+  return `
+    <div class="produit-card">
+      <div class="produit-image">
+        ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
+      </div>
+      <div class="produit-info">
+        <span class="produit-categorie">${p.categorie}</span>
+        <h3 class="produit-nom">${p.nom}</h3>
+        <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+        <button class="btn-ajouter" data-produit="${produitData}">Ajouter au panier</button>
+      </div>
+    </div>
+  `;
+}
+
 async function chargerProduits() {
   const conteneur = document.getElementById('grille-produits');
   const boutonVoirPlus = document.getElementById('bouton-voir-plus');
@@ -47,15 +66,12 @@ async function chargerProduits() {
     .order('cree_le', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
 
-  if (currentCategorie) {
-    requete = requete.eq('categorie', currentCategorie);
-  }
+  if (currentCategorie) requete = requete.eq('categorie', currentCategorie);
 
   const { data, error } = await requete;
 
   if (error) {
     conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Impossible de charger les produits pour le moment.</p>';
-    console.error('Erreur chargement produits :', error);
     boutonVoirPlus.style.display = 'none';
     return;
   }
@@ -66,19 +82,7 @@ async function chargerProduits() {
     return;
   }
 
-  const cartesHtml = data.map(p => `
-    <div class="produit-card">
-      <div class="produit-image">
-        ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
-      </div>
-      <div class="produit-info">
-        <span class="produit-categorie">${p.categorie}</span>
-        <h3 class="produit-nom">${p.nom}</h3>
-        <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-      </div>
-    </div>
-  `).join('');
-
+  const cartesHtml = data.map(carteProduitHtml).join('');
   conteneur.innerHTML = (offset === 0) ? cartesHtml : conteneur.innerHTML + cartesHtml;
 
   offset += data.length;
