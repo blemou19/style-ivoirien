@@ -534,3 +534,31 @@
 }
 .panier-commander-btn{ width:100%; justify-content:center; }
 .panier-note{ font-size:11px; color:#7a6f64; text-align:center; margin: 10px 0 0; }
+
+
+@media (max-width: 600px){
+  .produits-grid{
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .produit-info{
+    padding: 10px;
+    gap: 3px;
+  }
+  .produit-nom{
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .produit-categorie{
+    font-size: 9px;
+  }
+  .produit-prix{
+    font-size: 12px;
+  }
+  .btn-ajouter{
+    font-size: 11px;
+    padding: 8px 10px;
+    margin-top: 6px;
+    width: 100%;
+  }
+}
