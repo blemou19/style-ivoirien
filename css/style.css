@@ -602,3 +602,17 @@
 }
 .sm-mode{ display:flex; gap:24px; font-size:14px; padding:4px 0; }
 .sm-mode label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+
+.sm-label{ font-size:14px; margin:4px 0 2px; font-weight:500; }
+.mesures-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px;
+  border:1px solid var(--line); border-radius:10px; padding:14px; background:#fff;
+}
+.mesure-champ{ display:flex; flex-direction:column; gap:4px; font-size:13px; }
+.mesure-input{ display:flex; align-items:center; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.mesure-input input{ border:none; padding:9px 10px; width:100%; font-size:14px; }
+.mesure-input input:focus{ outline:none; }
+.mesure-input span{ padding:0 10px; font-family:var(--font-mono); font-size:12px; color:#7a6f64; background:var(--cream-soft); align-self:stretch; display:flex; align-items:center; }
+@media (max-width:480px){
+  .mesures-grid{ grid-template-columns:1fr; }
+}
