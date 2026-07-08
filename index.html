@@ -107,9 +107,39 @@
     <div class="section-head">
       <p class="eyebrow">Prestation</p>
       <h2>Une création sur mesure</h2>
-      <p>Le formulaire de mesures et de rendez-vous arrive dans une prochaine étape.</p>
+      <p>Choisissez une date, décrivez votre projet, et recevez une réponse rapide sur WhatsApp.</p>
     </div>
-    <div class="placeholder-block" id="rendez-vous">Formulaire sur mesure + rendez-vous — étape 4</div>
+
+    <div class="calendrier">
+      <div class="calendrier-header">
+        <button type="button" id="mois-prec" aria-label="Mois précédent">&larr;</button>
+        <span id="mois-label"></span>
+        <button type="button" id="mois-suiv" aria-label="Mois suivant">&rarr;</button>
+      </div>
+      <div class="calendrier-jours-semaine">
+        <span>Lu</span><span>Ma</span><span>Me</span><span>Je</span><span>Ve</span><span>Sa</span><span>Di</span>
+      </div>
+      <div id="calendrier-grille" class="calendrier-grille"></div>
+    </div>
+    <p id="date-choisie-affichage" class="date-choisie-affichage">Choisissez une date dans le calendrier ci-dessus.</p>
+
+    <form id="form-sur-mesure" class="form-sur-mesure">
+      <input type="text" id="sm-nom" placeholder="Votre nom" required>
+      <input type="tel" id="sm-telephone" placeholder="Votre numéro de téléphone" required>
+      <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
+      <textarea id="sm-mesures" placeholder="Vos mesures si vous les avez (tour de poitrine, taille, hanches, longueur...)" rows="3"></textarea>
+      <div class="sm-mode">
+        <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
+        <label><input type="radio" name="mode" value="À domicile"> À domicile</label>
+      </div>
+      <select id="sm-heure">
+        <option>09h00</option><option>10h00</option><option>11h00</option><option>12h00</option>
+        <option>13h00</option><option>14h00</option><option>15h00</option><option>16h00</option>
+        <option>17h00</option><option>18h00</option>
+      </select>
+      <textarea id="sm-notes" placeholder="Notes complémentaires (optionnel)" rows="2"></textarea>
+      <button type="submit" class="btn btn-primary">Envoyer la demande via WhatsApp</button>
+    </form>
   </div>
 </section>
 
