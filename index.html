@@ -153,3 +153,53 @@
     <div class="footer-links">
       <h4>Navigation</h4>
       <a href="boutique.html">Boutique</a>
+      <a href="#sur-mesure">Sur mesure</a>
+      <a href="#rendez-vous">Rendez-vous</a>
+    </div>
+    <div class="footer-links">
+      <h4>Contact</h4>
+      <a href="https://wa.me/224626321860" target="_blank">WhatsApp : +224 62 63 21 860</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Style Ivoirien — tous droits réservés</span>
+    <a href="#" class="admin-link">Espace pro</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/main.js"></script>
+<script src="js/sur-mesure.js"></script>
+<script>
+  async function chargerApercu() {
+    const conteneur = document.getElementById('grille-apercu');
+    const { data, error } = await supabaseClient
+      .from('produits')
+      .select('*')
+      .eq('actif', true)
+      .order('cree_le', { ascending: false })
+      .limit(4);
+
+    if (error || !data || data.length === 0) {
+      conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun produit pour le moment.</p>';
+      return;
+    }
+
+    conteneur.innerHTML = data.map(p => `
+      <div class="produit-card">
+        <div class="produit-image">
+          ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
+        </div>
+        <div class="produit-info">
+          <span class="produit-categorie">${p.categorie}</span>
+          <h3 class="produit-nom">${p.nom}</h3>
+          <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+          <button class="btn-ajouter" data-produit="${encodeURIComponent(JSON.stringify({id:p.id, nom:p.nom, prix:p.prix, image_url:p.image_url||''}))}">Ajouter au panier</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  chargerApercu();
+</script>
+</body>
+</html>
