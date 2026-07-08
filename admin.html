@@ -41,7 +41,12 @@
       <input type="text" id="p-categorie" placeholder="Catégorie (ex: Robes)" required>
       <input type="number" id="p-prix" placeholder="Prix en GNF" required>
       <input type="text" id="p-tailles" placeholder="Tailles (ex: S,M,L)">
-      <input type="url" id="p-image" placeholder="Lien de la photo (URL Supabase Storage)" class="full">
+      <label class="full" style="font-size:13px; color:#7a6f64;">
+  Photo du produit
+  <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
+</label>
+<input type="hidden" id="p-image">
+<p id="p-image-statut" class="full" style="font-size:12px; color:#7a6f64; margin:0;"></p>
       <textarea id="p-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
       <button type="submit" class="btn btn-primary">Ajouter le produit</button>
     </form>
