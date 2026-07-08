@@ -19,7 +19,7 @@ mainNav.querySelectorAll('a').forEach(link => {
 
 // ===================== PANIER =====================
 const PANIER_KEY = 'style_ivoirien_panier';
-const NUMERO_WHATSAPP = '224626321860';
+const NUMERO_WHATSAPP = '33744192080';
 
 function getPanier() {
   try {
@@ -186,11 +186,15 @@ async function envoyerCommande() {
   });
   if (error) console.error('Erreur enregistrement commande :', error);
 
+  const donneesCommande = { nom, telephone, articles: panier, total, date: new Date().toISOString() };
+  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+  const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
+
   const lignes = panier.map(item =>
     `- ${item.nom} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
-  const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nNom : ${nom}\nTéléphone : ${telephone}`;
+  const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
   const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
 
   window.open(lienWhatsApp, '_blank');
