@@ -49,15 +49,50 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
 // ===================== PRODUITS =====================
 document.getElementById('form-nouveau-produit').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const boutonSubmit = e.target.querySelector('button[type="submit"]');
+  const statutEl = document.getElementById('p-image-statut');
+  const fichier = document.getElementById('p-image-file').files[0];
+
+  boutonSubmit.disabled = true;
+  boutonSubmit.textContent = 'Envoi en cours...';
+
+  let imageUrl = '';
+
+  if (fichier) {
+    statutEl.textContent = 'Envoi de la photo...';
+    const nomFichier = `${Date.now()}-${fichier.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+
+    const { error: erreurUpload } = await supabaseClient.storage
+      .from('produits')
+      .upload(nomFichier, fichier);
+
+    if (erreurUpload) {
+      alert("Erreur lors de l'envoi de la photo : " + erreurUpload.message);
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = 'Ajouter le produit';
+      statutEl.textContent = '';
+      return;
+    }
+
+    const { data: urlData } = supabaseClient.storage.from('produits').getPublicUrl(nomFichier);
+    imageUrl = urlData.publicUrl;
+  }
+
+  statutEl.textContent = '';
+
   const { error } = await supabaseClient.from('produits').insert({
     nom: document.getElementById('p-nom').value.trim(),
     categorie: document.getElementById('p-categorie').value.trim(),
     prix: Number(document.getElementById('p-prix').value),
     description: document.getElementById('p-description').value.trim(),
-    image_url: document.getElementById('p-image').value.trim(),
+    image_url: imageUrl,
     tailles: document.getElementById('p-tailles').value.trim(),
     actif: true
   });
+
+  boutonSubmit.disabled = false;
+  boutonSubmit.textContent = 'Ajouter le produit';
+
   if (error) {
     alert("Erreur lors de l'ajout : " + error.message);
     return;
