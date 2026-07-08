@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Détail de la commande — Style Ivoirien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="46" stroke="#EDE4D6" stroke-width="7"/>
+        </svg>
+      </span>
+      <span class="logo-text">
+        <span class="line1">Style Ivoirien</span>
+        <span class="line2">COUTURE &amp; BOUTIQUE</span>
+      </span>
+    </a>
+  </div>
+</header>
+
+<div class="page-header-lite">
+  <p class="eyebrow">Détail de la commande</p>
+  <h1 id="commande-titre">Commande</h1>
+</div>
+
+<section>
+  <div class="wrap" style="max-width:640px;">
+    <div id="commande-contenu"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-bottom" style="max-width:1100px; margin:0 auto; padding:24px;">
+    <span>© 2026 Style Ivoirien</span>
+  </div>
+</footer>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const brut = params.get('d');
+  const conteneur = document.getElementById('commande-contenu');
+
+  if (!brut) {
+    conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Aucune commande à afficher.</p>';
+  } else {
+    try {
+      const commande = JSON.parse(brut);
+      const dateFormatee = new Date(commande.date).toLocaleString('fr-FR');
+
+      const lignesArticles = commande.articles.map(item => `
+        <div class="panier-item">
+          <div class="panier-item-image">
+            ${item.image_url ? `<img src="${item.image_url}" alt="${item.nom}">` : ''}
+          </div>
+          <div class="panier-item-info">
+            <span class="panier-item-nom">${item.nom}</span>
+            <span class="panier-item-prix">${item.qty} x ${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
+          </div>
+        </div>
+      `).join('');
+
+      conteneur.innerHTML = `
+        <p style="color:#7a6f64; margin-bottom:20px;">Reçue le ${dateFormatee}</p>
+        <div style="border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:20px;">
+          <p><strong>Client :</strong> ${commande.nom}</p>
+          <p><strong>Téléphone :</strong> ${commande.telephone}</p>
+        </div>
+        ${lignesArticles}
+        <div class="panier-total" style="margin-top:20px;">
+          <span>Total</span>
+          <span>${Number(commande.total).toLocaleString('fr-FR')} GNF</span>
+        </div>
+      `;
+    } catch (e) {
+      conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Impossible d\'afficher cette commande.</p>';
+    }
+  }
+</script>
+</body>
+</html>
