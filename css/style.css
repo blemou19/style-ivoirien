@@ -404,3 +404,42 @@
     .hero-ctas{ justify-content:center; }
     .footer-inner{ grid-template-columns: 1fr; }
   }
+
+.filtres-categories{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin-bottom:36px;
+}
+.chip{
+  font-family: var(--font-mono);
+  font-size:12px;
+  letter-spacing:0.5px;
+  padding:8px 16px;
+  border-radius:20px;
+  border:1px solid var(--ink);
+  background:transparent;
+  color:var(--ink);
+  cursor:pointer;
+}
+.chip-active{
+  background: var(--ink);
+  color: var(--cream);
+}
+.voir-plus-wrap{
+  text-align:center;
+  margin-top:40px;
+}
+.page-header-lite{
+  padding: 50px 24px 20px;
+  text-align:center;
+}
+.page-header-lite .eyebrow{ text-align:center; }
+.page-header-lite h1{
+  font-family: var(--font-display);
+  font-weight:500;
+  font-size: clamp(30px, 4.5vw, 44px);
+  margin: 0 0 10px;
+}
+.page-header-lite p{ color:#453a33; max-width:520px; margin:0 auto; }
