@@ -127,8 +127,34 @@
       <input type="text" id="sm-nom" placeholder="Votre nom" required>
       <input type="tel" id="sm-telephone" placeholder="Votre numéro de téléphone" required>
       <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
-      <textarea id="sm-mesures" placeholder="Vos mesures si vous les avez (tour de poitrine, taille, hanches, longueur...)" rows="3"></textarea>
-      <div class="sm-mode">
+<div class="sm-mesures-toggle">
+  <p class="sm-label">Connaissez-vous vos mesures ?</p>
+  <div class="sm-mode">
+    <label><input type="radio" name="sait-mesures" value="non" checked> Non, à prendre sur place</label>
+    <label><input type="radio" name="sait-mesures" value="oui"> Oui, je les connais</label>
+  </div>
+</div>
+
+<div id="bloc-mesures" class="mesures-grid" style="display:none;">
+  <label class="mesure-champ">Tour de poitrine
+    <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
+  </label>
+  <label class="mesure-champ">Tour de taille
+    <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
+  </label>
+  <label class="mesure-champ">Tour de hanches
+    <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
+  </label>
+  <label class="mesure-champ">Longueur souhaitée
+    <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
+  </label>
+  <label class="mesure-champ">Tour de bras
+    <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
+  </label>
+  <label class="mesure-champ">Épaules
+    <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
+  </label>
+</div>      <div class="sm-mode">
         <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
         <label><input type="radio" name="mode" value="En ligne (WhatsApp, téléphone...)"> En ligne</label>
       </div>
