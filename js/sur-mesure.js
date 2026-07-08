@@ -75,6 +75,38 @@ document.getElementById('mois-suiv').addEventListener('click', () => {
   genererCalendrier();
 });
 
+// ===================== TOGGLE MESURES =====================
+document.querySelectorAll('input[name="sait-mesures"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.getElementById('bloc-mesures').style.display =
+      (radio.value === 'oui' && radio.checked) ? 'grid' : 'none';
+  });
+});
+
+function collecterMesures() {
+  const saitMesures = document.querySelector('input[name="sait-mesures"]:checked').value;
+  if (saitMesures === 'non') return "À prendre sur place lors du rendez-vous";
+
+  const champs = [
+    ['Tour de poitrine', 'm-poitrine'],
+    ['Tour de taille', 'm-taille'],
+    ['Tour de hanches', 'm-hanches'],
+    ['Longueur souhaitée', 'm-longueur'],
+    ['Tour de bras', 'm-bras'],
+    ['Épaules', 'm-epaules'],
+  ];
+
+  const lignes = champs
+    .map(([label, id]) => {
+      const val = document.getElementById(id).value;
+      return val ? `${label} : ${val} cm` : null;
+    })
+    .filter(Boolean);
+
+  return lignes.length > 0 ? lignes.join(', ') : "Mesures à confirmer avec la cliente";
+}
+
+// ===================== SOUMISSION =====================
 document.getElementById('form-sur-mesure').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -86,7 +118,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const nom = document.getElementById('sm-nom').value.trim();
   const telephone = document.getElementById('sm-telephone').value.trim();
   const vetement = document.getElementById('sm-vetement').value.trim();
-  const mesures = document.getElementById('sm-mesures').value.trim();
+  const mesures = collecterMesures();
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const heure = document.getElementById('sm-heure').value;
   const notes = document.getElementById('sm-notes').value.trim();
@@ -119,7 +151,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
   const message = `Bonjour, je souhaite une création sur mesure :\n` +
     `Vêtement : ${vetement}\n` +
-    `Mesures : ${mesures || 'à discuter'}\n` +
+    `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
     (notes ? `Notes : ${notes}\n` : '') +
@@ -129,6 +161,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   window.open(lienWhatsApp, '_blank');
 
   document.getElementById('form-sur-mesure').reset();
+  document.getElementById('bloc-mesures').style.display = 'none';
   dateChoisie = null;
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
