@@ -55,6 +55,38 @@
       </div>
     </form>
     <table class="admin-table">
+      <thead><tr><th>Photo</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="tbody-produits"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-commandes" class="admin-panel">
+    <div class="admin-stats">
+      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-total-commandes">0</span><span class="admin-stat-label">Commandes reçues</span></div>
+      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-en-attente">0</span><span class="admin-stat-label">En attente</span></div>
+      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-ca">0 GNF</span><span class="admin-stat-label">Chiffre d'affaires confirmé</span></div>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th></tr></thead>
+      <tbody id="tbody-commandes"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-rdv" class="admin-panel">
+    <table class="admin-table">
+      <thead><tr><th>Date souhaitée</th><th>Client</th><th>Vêtement</th><th>Mode</th><th>Statut</th></tr></thead>
+      <tbody id="tbody-rdv"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-dispo" class="admin-panel">
+    <form id="form-indispo" class="admin-form">
+      <input type="date" id="indispo-debut" required>
+      <input type="date" id="indispo-fin" required>
+      <input type="text" id="indispo-motif" placeholder="Motif (optionnel, ex: voyage)" class="full">
+      <button type="submit" class="btn btn-primary">Bloquer cette période</button>
+    </form>
+    <table class="admin-table">
       <thead><tr><th>Du</th><th>Au</th><th>Motif</th><th></th></tr></thead>
       <tbody id="tbody-indispo"></tbody>
     </table>
