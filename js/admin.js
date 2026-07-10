@@ -222,10 +222,14 @@ async function chargerCommandesAdmin() {
 }
 
 // ===================== RENDEZ-VOUS =====================
+let rdvCache = [];
+
 async function chargerRendezVousAdmin() {
   const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true });
   const tbody = document.getElementById('tbody-rdv');
   if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  rdvCache = data;
 
   tbody.innerHTML = data.map(r => `
     <tr>
@@ -241,6 +245,7 @@ async function chargerRendezVousAdmin() {
           <option ${r.statut==='Annulé'?'selected':''}>Annulé</option>
         </select>
       </td>
+      <td><button class="admin-action-btn" data-id="${r.id}" data-action="contacter-rdv">Contacter</button></td>
     </tr>
   `).join('');
 
@@ -249,8 +254,18 @@ async function chargerRendezVousAdmin() {
       await supabaseClient.from('rendez_vous').update({ statut: sel.value }).eq('id', sel.dataset.id);
     });
   });
-}
 
+  document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rdvCache.find(x => x.id === btn.dataset.id);
+      if (!r) return;
+      const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const message = `Bonjour ${r.client_nom}, concernant votre demande pour "${r.type_vetement}" prévue le ${dateLisible} à ${r.heure_souhaitee} : `;
+      const numero = r.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+}
 // ===================== INDISPONIBILITES =====================
 document.getElementById('form-indispo').addEventListener('submit', async (e) => {
   e.preventDefault();
