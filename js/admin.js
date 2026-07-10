@@ -1,104 +1,337 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Espace pro — Style Ivoirien</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+// ===================== CONNEXION =====================
+const loginForm = document.getElementById('admin-login-form');
+const loginErreur = document.getElementById('admin-erreur');
 
-<div id="admin-login-screen" class="admin-login">
-  <h1>Espace pro</h1>
-  <p>Entre ton code d'accès pour gérer la boutique.</p>
-  <form id="admin-login-form">
-    <input type="email" id="admin-email" placeholder="Email" style="letter-spacing:normal; font-size:14px; text-align:left;" required>
-    <input type="password" id="admin-code" placeholder="Code d'accès" inputmode="numeric" required>
-    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Entrer</button>
-    <p id="admin-erreur" class="admin-erreur"></p>
-  </form>
-</div>
+async function verifierSession() {
+  const { data } = await supabaseClient.auth.getSession();
+  if (data.session) {
+    afficherAdmin();
+  }
+}
 
-<div id="admin-shell" class="admin-shell">
-  <div class="admin-topbar">
-    <h1>Style Ivoirien — Espace pro</h1>
-    <button id="admin-deconnexion" class="admin-deconnexion">Se déconnecter</button>
-  </div>
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('admin-email').value.trim();
+  const code = document.getElementById('admin-code').value.trim();
 
-  <div class="admin-tabs">
-    <button class="admin-tab actif" data-panel="produits">Produits</button>
-    <button class="admin-tab" data-panel="commandes">Commandes</button>
-    <button class="admin-tab" data-panel="rdv">Rendez-vous</button>
-    <button class="admin-tab" data-panel="dispo">Disponibilités</button>
-  </div>
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
+  if (error) {
+    loginErreur.textContent = "Code incorrect. Réessaie.";
+    return;
+  }
+  afficherAdmin();
+});
 
-  <div id="panel-produits" class="admin-panel actif">
-    <form id="form-nouveau-produit" class="admin-form">
-      <input type="hidden" id="p-edit-id">
-      <input type="text" id="p-nom" placeholder="Nom du produit" required>
-      <input type="text" id="p-categorie" placeholder="Catégorie (ex: Robes)" required>
-      <input type="number" id="p-prix" placeholder="Prix en GNF" required>
-      <input type="text" id="p-tailles" placeholder="Tailles (ex: S,M,L)">
-      <label class="full" style="font-size:13px; color:#7a6f64;">
-        Photo du produit <span id="p-image-actuelle-label" style="color:var(--terracotta-dark);"></span>
-        <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
-      </label>
-      <input type="hidden" id="p-image">
-      <p id="p-image-statut" class="full" style="font-size:12px; color:#7a6f64; margin:0;"></p>
-      <textarea id="p-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
-      <div class="full" style="display:flex; gap:10px;">
-        <button type="submit" id="p-submit-btn" class="btn btn-primary">Ajouter le produit</button>
-        <button type="button" id="p-annuler-btn" class="btn btn-outline" style="display:none;">Annuler la modification</button>
-      </div>
-    </form>
-    <table class="admin-table">
-      <thead><tr><th>Photo</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
-      <tbody id="tbody-produits"></tbody>
-    </table>
-  </div>
+function afficherAdmin() {
+  document.getElementById('admin-login-screen').style.display = 'none';
+  document.getElementById('admin-shell').style.display = 'block';
+  chargerProduitsAdmin();
+  chargerCommandesAdmin();
+  chargerRendezVousAdmin();
+  chargerIndisponibilitesAdmin();
+}
 
-  <div id="panel-commandes" class="admin-panel">
-    <div class="admin-stats">
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-total-commandes">0</span><span class="admin-stat-label">Commandes reçues</span></div>
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-en-attente">0</span><span class="admin-stat-label">En attente</span></div>
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-ca">0 GNF</span><span class="admin-stat-label">Chiffre d'affaires confirmé</span></div>
-    </div>
-    <table class="admin-table">
-      <thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th><th></th></tr></thead>
-      <tbody id="tbody-commandes"></tbody>
-    </table>
-  </div>
+document.getElementById('admin-deconnexion').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  location.reload();
+});
 
-  <div id="panel-rdv" class="admin-panel">
-    <table class="admin-table">
-      <thead><tr><th>Date souhaitée</th><th>Client</th><th>Vêtement</th><th>Mode</th><th>Statut</th><th></th></tr></thead>
-      <tbody id="tbody-rdv"></tbody>
-    </table>
-  </div>
+// ===================== ONGLETS =====================
+document.querySelectorAll('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('actif'));
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('actif'));
+    tab.classList.add('actif');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('actif');
+  });
+});
 
-  <div id="panel-dispo" class="admin-panel">
-    <form id="form-indispo" class="admin-form">
-      <input type="date" id="indispo-debut" required>
-      <input type="date" id="indispo-fin" required>
-      <input type="text" id="indispo-motif" placeholder="Motif (optionnel, ex: voyage)" class="full">
-      <button type="submit" class="btn btn-primary">Bloquer cette période</button>
-    </form>
-    <table class="admin-table">
-      <thead><tr><th>Du</th><th>Au</th><th>Motif</th><th></th></tr></thead>
-      <tbody id="tbody-indispo"></tbody>
-    </table>
-  </div>
-</div>
+// ===================== PRODUITS =====================
+let produitsCache = [];
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script>
-  const SUPABASE_URL = "https://shuzyobfytegnlyulgdj.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_AHhrwdfio4wPM2kcUjdZ8w_DReukYdM";
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
-<script src="js/admin.js"></script>
-</body>
-</html>
+function commencerEdition(id) {
+  const produit = produitsCache.find(p => p.id === id);
+  if (!produit) return;
+
+  document.getElementById('p-edit-id').value = produit.id;
+  document.getElementById('p-nom').value = produit.nom;
+  document.getElementById('p-categorie').value = produit.categorie;
+  document.getElementById('p-prix').value = produit.prix;
+  document.getElementById('p-tailles').value = produit.tailles || '';
+  document.getElementById('p-description').value = produit.description || '';
+  document.getElementById('p-image').value = produit.image_url || '';
+  document.getElementById('p-image-actuelle-label').textContent = produit.image_url ? '(une photo existe déjà, choisis-en une seulement si tu veux la remplacer)' : '';
+
+  document.getElementById('p-submit-btn').textContent = 'Enregistrer les modifications';
+  document.getElementById('p-annuler-btn').style.display = 'inline-flex';
+
+  document.getElementById('form-nouveau-produit').scrollIntoView({ behavior: 'smooth' });
+}
+
+function annulerEdition() {
+  document.getElementById('form-nouveau-produit').reset();
+  document.getElementById('p-edit-id').value = '';
+  document.getElementById('p-image').value = '';
+  document.getElementById('p-image-actuelle-label').textContent = '';
+  document.getElementById('p-submit-btn').textContent = 'Ajouter le produit';
+  document.getElementById('p-annuler-btn').style.display = 'none';
+}
+
+document.getElementById('p-annuler-btn').addEventListener('click', annulerEdition);
+
+document.getElementById('form-nouveau-produit').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const boutonSubmit = document.getElementById('p-submit-btn');
+  const statutEl = document.getElementById('p-image-statut');
+  const fichier = document.getElementById('p-image-file').files[0];
+  const editId = document.getElementById('p-edit-id').value;
+
+  boutonSubmit.disabled = true;
+  boutonSubmit.textContent = 'Envoi en cours...';
+
+  let imageUrl = document.getElementById('p-image').value || '';
+
+  if (fichier) {
+    statutEl.textContent = 'Envoi de la photo...';
+    const nomFichier = `${Date.now()}-${fichier.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+
+    const { error: erreurUpload } = await supabaseClient.storage
+      .from('produits')
+      .upload(nomFichier, fichier);
+
+    if (erreurUpload) {
+      alert("Erreur lors de l'envoi de la photo : " + erreurUpload.message);
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
+      statutEl.textContent = '';
+      return;
+    }
+
+    const { data: urlData } = supabaseClient.storage.from('produits').getPublicUrl(nomFichier);
+    imageUrl = urlData.publicUrl;
+  }
+
+  statutEl.textContent = '';
+
+  const donneesProduit = {
+    nom: document.getElementById('p-nom').value.trim(),
+    categorie: document.getElementById('p-categorie').value.trim(),
+    prix: Number(document.getElementById('p-prix').value),
+    description: document.getElementById('p-description').value.trim(),
+    image_url: imageUrl,
+    tailles: document.getElementById('p-tailles').value.trim(),
+  };
+
+  let error;
+  if (editId) {
+    ({ error } = await supabaseClient.from('produits').update(donneesProduit).eq('id', editId));
+  } else {
+    ({ error } = await supabaseClient.from('produits').insert({ ...donneesProduit, actif: true }));
+  }
+
+  boutonSubmit.disabled = false;
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
+    return;
+  }
+
+  annulerEdition();
+  chargerProduitsAdmin();
+});
+
+async function chargerProduitsAdmin() {
+  const { data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false });
+  const tbody = document.getElementById('tbody-produits');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  produitsCache = data;
+
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>${p.image_url ? `<img src="${p.image_url}" alt="">` : '—'}</td>
+      <td>${p.nom}</td>
+      <td>${p.categorie}</td>
+      <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
+      <td>
+        <select data-id="${p.id}" class="select-actif-produit">
+          <option value="true" ${p.actif ? 'selected' : ''}>En vente</option>
+          <option value="false" ${!p.actif ? 'selected' : ''}>Masqué</option>
+        </select>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${p.id}" data-action="modifier-produit">Modifier</button>
+        <button class="admin-action-btn" data-id="${p.id}" data-action="supprimer-produit">Supprimer</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-actif-produit').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('produits').update({ actif: sel.value === 'true' }).eq('id', sel.dataset.id);
+    });
+  });
+  document.querySelectorAll('[data-action="supprimer-produit"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Supprimer ce produit définitivement ?')) return;
+      await supabaseClient.from('produits').delete().eq('id', btn.dataset.id);
+      chargerProduitsAdmin();
+    });
+  });
+  document.querySelectorAll('[data-action="modifier-produit"]').forEach(btn => {
+    btn.addEventListener('click', () => commencerEdition(btn.dataset.id));
+  });
+}
+
+// ===================== COMMANDES =====================
+let commandesCache = [];
+
+async function chargerCommandesAdmin() {
+  const { data, error } = await supabaseClient.from('commandes').select('*').order('cree_le', { ascending: false });
+  const tbody = document.getElementById('tbody-commandes');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  commandesCache = data;
+
+  document.getElementById('stat-total-commandes').textContent = data.length;
+  const confirmees = data.filter(c => c.statut === 'Confirmée' || c.statut === 'Livrée');
+  const chiffreAffaires = confirmees.reduce((s, c) => s + Number(c.total), 0);
+  document.getElementById('stat-ca').textContent = chiffreAffaires.toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('stat-en-attente').textContent = data.filter(c => c.statut === 'En attente').length;
+
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${new Date(c.cree_le).toLocaleDateString('fr-FR')}</td>
+      <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
+      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}</span></td>
+      <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
+      <td>
+        <select data-id="${c.id}" class="select-statut-commande">
+          <option ${c.statut==='En attente'?'selected':''}>En attente</option>
+          <option ${c.statut==='Confirmée'?'selected':''}>Confirmée</option>
+          <option ${c.statut==='Livrée'?'selected':''}>Livrée</option>
+          <option ${c.statut==='Annulée'?'selected':''}>Annulée</option>
+        </select>
+      </td>
+      <td><button class="admin-action-btn" data-id="${c.id}" data-action="contacter-commande">Contacter</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-statut-commande').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('commandes').update({ statut: sel.value }).eq('id', sel.dataset.id);
+      chargerCommandesAdmin();
+    });
+  });
+
+  document.querySelectorAll('[data-action="contacter-commande"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = commandesCache.find(x => x.id === btn.dataset.id);
+      if (!c) return;
+      const statutActuel = document.querySelector(`.select-statut-commande[data-id="${c.id}"]`).value;
+      const totalFormate = Number(c.total).toLocaleString('fr-FR') + ' GNF';
+
+      const messages = {
+        'En attente': `Bonjour ${c.client_nom}, nous avons bien reçu votre commande (${totalFormate}). Nous revenons vers vous rapidement pour la confirmer.`,
+        'Confirmée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) est confirmée ! Nous préparons vos articles.`,
+        'Livrée': `Bonjour ${c.client_nom}, votre commande a bien été livrée. Merci pour votre confiance !`,
+        'Annulée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) a été annulée. N'hésitez pas à repasser commande si besoin.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${c.client_nom}, `;
+      const numero = c.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+}
+
+// ===================== RENDEZ-VOUS =====================
+let rdvCache = [];
+
+async function chargerRendezVousAdmin() {
+  const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true });
+  const tbody = document.getElementById('tbody-rdv');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  rdvCache = data;
+
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
+      <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
+      <td>${r.type_vetement}</td>
+      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.zone_livraison || ''}</span></td>
+      <td>
+        <select data-id="${r.id}" class="select-statut-rdv">
+          <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
+          <option ${r.statut==='Confirmé'?'selected':''}>Confirmé</option>
+          <option ${r.statut==='Terminé'?'selected':''}>Terminé</option>
+          <option ${r.statut==='Annulé'?'selected':''}>Annulé</option>
+        </select>
+      </td>
+      <td><button class="admin-action-btn" data-id="${r.id}" data-action="contacter-rdv">Contacter</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-statut-rdv').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('rendez_vous').update({ statut: sel.value }).eq('id', sel.dataset.id);
+    });
+  });
+
+  document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rdvCache.find(x => x.id === btn.dataset.id);
+      if (!r) return;
+      const statutActuel = document.querySelector(`.select-statut-rdv[data-id="${r.id}"]`).value;
+      const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      const messages = {
+        'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}. À bientôt !`,
+        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à revenir vers nous pour une prochaine création.`,
+        'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
+      const numero = r.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+}
+
+// ===================== INDISPONIBILITES =====================
+document.getElementById('form-indispo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await supabaseClient.from('indisponibilites').insert({
+    date_debut: document.getElementById('indispo-debut').value,
+    date_fin: document.getElementById('indispo-fin').value,
+    motif: document.getElementById('indispo-motif').value.trim()
+  });
+  if (error) { alert("Erreur : " + error.message); return; }
+  e.target.reset();
+  chargerIndisponibilitesAdmin();
+});
+
+async function chargerIndisponibilitesAdmin() {
+  const { data, error } = await supabaseClient.from('indisponibilites').select('*').order('date_debut', { ascending: true });
+  const tbody = document.getElementById('tbody-indispo');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="4">Erreur de chargement.</td></tr>'; return; }
+
+  tbody.innerHTML = data.map(i => `
+    <tr>
+      <td>${new Date(i.date_debut).toLocaleDateString('fr-FR')}</td>
+      <td>${new Date(i.date_fin).toLocaleDateString('fr-FR')}</td>
+      <td>${i.motif || '—'}</td>
+      <td><button class="admin-action-btn" data-id="${i.id}" data-action="supprimer-indispo">Supprimer</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('[data-action="supprimer-indispo"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await supabaseClient.from('indisponibilites').delete().eq('id', btn.dataset.id);
+      chargerIndisponibilitesAdmin();
+    });
+  });
+}
+
+verifierSession();
