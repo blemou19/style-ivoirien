@@ -57,13 +57,26 @@ function genererCalendrier() {
   }
 }
 
-function choisirDate(dateStr, cell) {
+async function choisirDate(dateStr, cell) {
   dateChoisie = dateStr;
   document.querySelectorAll('.jour-cell').forEach(c => c.classList.remove('jour-selectionne'));
   cell.classList.add('jour-selectionne');
   const dateLisible = new Date(dateStr + 'T00:00:00')
     .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   document.getElementById('date-choisie-affichage').textContent = `Date choisie : ${dateLisible}`;
+
+  const { data } = await supabaseClient
+    .from('rendez_vous')
+    .select('heure_souhaitee')
+    .eq('date_souhaitee', dateStr)
+    .neq('statut', 'Annulé');
+
+  const heuresPrises = (data || []).map(r => r.heure_souhaitee);
+  document.querySelectorAll('#sm-heure option').forEach(opt => {
+    const prise = heuresPrises.includes(opt.value);
+    opt.disabled = prise;
+    opt.textContent = opt.value + (prise ? ' (déjà pris)' : '');
+  });
 }
 
 document.getElementById('mois-prec').addEventListener('click', () => {
