@@ -213,10 +213,22 @@ async function chargerCommandesAdmin() {
     </tr>
   `).join('');
 
-  document.querySelectorAll('.select-statut-commande').forEach(sel => {
-    sel.addEventListener('change', async () => {
-      await supabaseClient.from('commandes').update({ statut: sel.value }).eq('id', sel.dataset.id);
-      chargerCommandesAdmin();
+  document.querySelectorAll('[data-action="contacter-commande"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = commandesCache.find(x => x.id === btn.dataset.id);
+      if (!c) return;
+      const statutActuel = document.querySelector(`.select-statut-commande[data-id="${c.id}"]`).value;
+      const totalFormate = Number(c.total).toLocaleString('fr-FR') + ' GNF';
+
+      const messages = {
+        'En attente': `Bonjour ${c.client_nom}, nous avons bien reçu votre commande (${totalFormate}). Nous revenons vers vous rapidement pour la confirmer.`,
+        'Confirmée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) est confirmée ! Nous préparons vos articles.`,
+        'Livrée': `Bonjour ${c.client_nom}, votre commande a bien été livrée. Merci pour votre confiance !`,
+        'Annulée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) a été annulée. N'hésitez pas à repasser commande si besoin.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${c.client_nom}, `;
+      const numero = c.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
     });
   });
 }
@@ -249,18 +261,20 @@ async function chargerRendezVousAdmin() {
     </tr>
   `).join('');
 
-  document.querySelectorAll('.select-statut-rdv').forEach(sel => {
-    sel.addEventListener('change', async () => {
-      await supabaseClient.from('rendez_vous').update({ statut: sel.value }).eq('id', sel.dataset.id);
-    });
-  });
-
-  document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
+ document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = rdvCache.find(x => x.id === btn.dataset.id);
       if (!r) return;
+      const statutActuel = document.querySelector(`.select-statut-rdv[data-id="${r.id}"]`).value;
       const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-      const message = `Bonjour ${r.client_nom}, concernant votre demande pour "${r.type_vetement}" prévue le ${dateLisible} à ${r.heure_souhaitee} : `;
+
+      const messages = {
+        'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}. À bientôt !`,
+        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à revenir vers nous pour une prochaine création.`,
+        'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
       const numero = r.client_telephone.replace(/[^0-9]/g, '');
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
     });
