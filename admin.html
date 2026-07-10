@@ -37,50 +37,22 @@
 
   <div id="panel-produits" class="admin-panel actif">
     <form id="form-nouveau-produit" class="admin-form">
+      <input type="hidden" id="p-edit-id">
       <input type="text" id="p-nom" placeholder="Nom du produit" required>
       <input type="text" id="p-categorie" placeholder="Catégorie (ex: Robes)" required>
       <input type="number" id="p-prix" placeholder="Prix en GNF" required>
       <input type="text" id="p-tailles" placeholder="Tailles (ex: S,M,L)">
       <label class="full" style="font-size:13px; color:#7a6f64;">
-  Photo du produit
-  <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
-</label>
-<input type="hidden" id="p-image">
-<p id="p-image-statut" class="full" style="font-size:12px; color:#7a6f64; margin:0;"></p>
+        Photo du produit <span id="p-image-actuelle-label" style="color:var(--terracotta-dark);"></span>
+        <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
+      </label>
+      <input type="hidden" id="p-image">
+      <p id="p-image-statut" class="full" style="font-size:12px; color:#7a6f64; margin:0;"></p>
       <textarea id="p-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
-      <button type="submit" class="btn btn-primary">Ajouter le produit</button>
-    </form>
-    <table class="admin-table">
-      <thead><tr><th>Photo</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
-      <tbody id="tbody-produits"></tbody>
-    </table>
-  </div>
-
-  <div id="panel-commandes" class="admin-panel">
-    <div class="admin-stats">
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-total-commandes">0</span><span class="admin-stat-label">Commandes reçues</span></div>
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-en-attente">0</span><span class="admin-stat-label">En attente</span></div>
-      <div class="admin-stat-card"><span class="admin-stat-valeur" id="stat-ca">0 GNF</span><span class="admin-stat-label">Chiffre d'affaires confirmé</span></div>
-    </div>
-    <table class="admin-table">
-      <thead><tr><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Statut</th></tr></thead>
-      <tbody id="tbody-commandes"></tbody>
-    </table>
-  </div>
-
-  <div id="panel-rdv" class="admin-panel">
-    <table class="admin-table">
-      <thead><tr><th>Date souhaitée</th><th>Client</th><th>Vêtement</th><th>Mode</th><th>Statut</th></tr></thead>
-      <tbody id="tbody-rdv"></tbody>
-    </table>
-  </div>
-
-  <div id="panel-dispo" class="admin-panel">
-    <form id="form-indispo" class="admin-form">
-      <input type="date" id="indispo-debut" required>
-      <input type="date" id="indispo-fin" required>
-      <input type="text" id="indispo-motif" placeholder="Motif (optionnel, ex: voyage)" class="full">
-      <button type="submit" class="btn btn-primary">Bloquer cette période</button>
+      <div class="full" style="display:flex; gap:10px;">
+        <button type="submit" id="p-submit-btn" class="btn btn-primary">Ajouter le produit</button>
+        <button type="button" id="p-annuler-btn" class="btn btn-outline" style="display:none;">Annuler la modification</button>
+      </div>
     </form>
     <table class="admin-table">
       <thead><tr><th>Du</th><th>Au</th><th>Motif</th><th></th></tr></thead>
