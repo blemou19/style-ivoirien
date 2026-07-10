@@ -47,16 +47,49 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
 });
 
 // ===================== PRODUITS =====================
+let produitsCache = [];
+
+function commencerEdition(id) {
+  const produit = produitsCache.find(p => p.id === id);
+  if (!produit) return;
+
+  document.getElementById('p-edit-id').value = produit.id;
+  document.getElementById('p-nom').value = produit.nom;
+  document.getElementById('p-categorie').value = produit.categorie;
+  document.getElementById('p-prix').value = produit.prix;
+  document.getElementById('p-tailles').value = produit.tailles || '';
+  document.getElementById('p-description').value = produit.description || '';
+  document.getElementById('p-image').value = produit.image_url || '';
+  document.getElementById('p-image-actuelle-label').textContent = produit.image_url ? '(une photo existe déjà, choisis-en une seulement si tu veux la remplacer)' : '';
+
+  document.getElementById('p-submit-btn').textContent = 'Enregistrer les modifications';
+  document.getElementById('p-annuler-btn').style.display = 'inline-flex';
+
+  document.getElementById('form-nouveau-produit').scrollIntoView({ behavior: 'smooth' });
+}
+
+function annulerEdition() {
+  document.getElementById('form-nouveau-produit').reset();
+  document.getElementById('p-edit-id').value = '';
+  document.getElementById('p-image').value = '';
+  document.getElementById('p-image-actuelle-label').textContent = '';
+  document.getElementById('p-submit-btn').textContent = 'Ajouter le produit';
+  document.getElementById('p-annuler-btn').style.display = 'none';
+}
+
+document.getElementById('p-annuler-btn').addEventListener('click', annulerEdition);
+
 document.getElementById('form-nouveau-produit').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const boutonSubmit = e.target.querySelector('button[type="submit"]');
+  const boutonSubmit = document.getElementById('p-submit-btn');
   const statutEl = document.getElementById('p-image-statut');
   const fichier = document.getElementById('p-image-file').files[0];
+  const editId = document.getElementById('p-edit-id').value;
 
   boutonSubmit.disabled = true;
   boutonSubmit.textContent = 'Envoi en cours...';
 
-  let imageUrl = '';
+  let imageUrl = document.getElementById('p-image').value || '';
 
   if (fichier) {
     statutEl.textContent = 'Envoi de la photo...';
@@ -69,7 +102,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     if (erreurUpload) {
       alert("Erreur lors de l'envoi de la photo : " + erreurUpload.message);
       boutonSubmit.disabled = false;
-      boutonSubmit.textContent = 'Ajouter le produit';
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
       statutEl.textContent = '';
       return;
     }
@@ -80,24 +113,31 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 
   statutEl.textContent = '';
 
-  const { error } = await supabaseClient.from('produits').insert({
+  const donneesProduit = {
     nom: document.getElementById('p-nom').value.trim(),
     categorie: document.getElementById('p-categorie').value.trim(),
     prix: Number(document.getElementById('p-prix').value),
     description: document.getElementById('p-description').value.trim(),
     image_url: imageUrl,
     tailles: document.getElementById('p-tailles').value.trim(),
-    actif: true
-  });
+  };
+
+  let error;
+  if (editId) {
+    ({ error } = await supabaseClient.from('produits').update(donneesProduit).eq('id', editId));
+  } else {
+    ({ error } = await supabaseClient.from('produits').insert({ ...donneesProduit, actif: true }));
+  }
 
   boutonSubmit.disabled = false;
-  boutonSubmit.textContent = 'Ajouter le produit';
 
   if (error) {
-    alert("Erreur lors de l'ajout : " + error.message);
+    alert("Erreur : " + error.message);
+    boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
     return;
   }
-  e.target.reset();
+
+  annulerEdition();
   chargerProduitsAdmin();
 });
 
@@ -105,6 +145,8 @@ async function chargerProduitsAdmin() {
   const { data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false });
   const tbody = document.getElementById('tbody-produits');
   if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  produitsCache = data;
 
   tbody.innerHTML = data.map(p => `
     <tr>
@@ -118,7 +160,10 @@ async function chargerProduitsAdmin() {
           <option value="false" ${!p.actif ? 'selected' : ''}>Masqué</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${p.id}" data-action="supprimer-produit">Supprimer</button></td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${p.id}" data-action="modifier-produit">Modifier</button>
+        <button class="admin-action-btn" data-id="${p.id}" data-action="supprimer-produit">Supprimer</button>
+      </td>
     </tr>
   `).join('');
 
@@ -133,6 +178,9 @@ async function chargerProduitsAdmin() {
       await supabaseClient.from('produits').delete().eq('id', btn.dataset.id);
       chargerProduitsAdmin();
     });
+  });
+  document.querySelectorAll('[data-action="modifier-produit"]').forEach(btn => {
+    btn.addEventListener('click', () => commencerEdition(btn.dataset.id));
   });
 }
 
@@ -152,7 +200,7 @@ async function chargerCommandesAdmin() {
     <tr>
       <td>${new Date(c.cree_le).toLocaleDateString('fr-FR')}</td>
       <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
-      <td>${c.articles.length} article(s)</td>
+      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
       <td>
         <select data-id="${c.id}" class="select-statut-commande">
@@ -184,7 +232,7 @@ async function chargerRendezVousAdmin() {
       <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
       <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
       <td>${r.type_vetement}</td>
-      <td>${r.mode}</td>
+      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.zone_livraison || ''}</span></td>
       <td>
         <select data-id="${r.id}" class="select-statut-rdv">
           <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
