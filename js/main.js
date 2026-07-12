@@ -90,13 +90,21 @@ function creerPanierDrawer() {
         <span id="panier-total-montant">0 GNF</span>
       </div>
      <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
-      <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <select id="panier-indicatif" class="panier-input" style="flex:0 0 110px; margin-bottom:0;">
-          <option value="224">🇬🇳 +224</option>
-          <option value="33">🇫🇷 +33</option>
+     <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <select id="panier-indicatif" class="panier-input" style="flex:0 0 130px; margin-bottom:0;">
+          <option value="224">🇬🇳 Guinée +224</option>
+          <option value="225">🇨🇮 Côte d'Ivoire +225</option>
+          <option value="223">🇲🇱 Mali +223</option>
+          <option value="221">🇸🇳 Sénégal +221</option>
+          <option value="229">🇧🇯 Bénin +229</option>
+          <option value="228">🇹🇬 Togo +228</option>
+          <option value="226">🇧🇫 Burkina Faso +226</option>
+          <option value="33">🇫🇷 France +33</option>
+          <option value="autre">🌍 Autre pays</option>
         </select>
-        <input type="tel" id="panier-telephone" placeholder="Numéro sans le 0" class="panier-input" style="margin-bottom:0;">
+        <input type="tel" id="panier-telephone" placeholder="Numéro (ex: 622334455)" class="panier-input" style="margin-bottom:0; flex:1;">
       </div>
+      <input type="text" id="panier-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" class="panier-input" style="display:none;">
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
     </div>
@@ -109,6 +117,15 @@ function creerPanierDrawer() {
   document.getElementById('panier-fermer').addEventListener('click', fermerPanier);
   document.getElementById('panier-commander').addEventListener('click', envoyerCommande);
 }
+
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'panier-indicatif') {
+    const champ = document.getElementById('panier-telephone');
+    const champAutre = document.getElementById('panier-indicatif-autre');
+    champ.placeholder = e.target.value === '33' ? 'Numéro sans le 0 (ex: 612345678)' : 'Numéro (ex: 622334455)';
+    champAutre.style.display = e.target.value === 'autre' ? 'block' : 'none';
+  }
+});
 
 function ouvrirPanier() {
   afficherPanier();
@@ -169,10 +186,14 @@ document.addEventListener('click', (e) => {
 
 async function envoyerCommande() {
   const panier = getPanier();
- const nom = document.getElementById('panier-nom').value.trim();
-  const indicatif = document.getElementById('panier-indicatif').value;
+  const nom = document.getElementById('panier-nom').value.trim();
+  const indicatifSelect = document.getElementById('panier-indicatif').value;
+  const indicatif = indicatifSelect === 'autre'
+    ? document.getElementById('panier-indicatif-autre').value.trim().replace(/[^0-9]/g, '')
+    : indicatifSelect;
   const numeroLocal = document.getElementById('panier-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
   const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
+
   if (panier.length === 0) {
     alert('Votre panier est vide.');
     return;
