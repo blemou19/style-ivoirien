@@ -1,6 +1,8 @@
 const PAGE_SIZE = 12;
 let currentCategorie = null;
 let offset = 0;
+let produitsCharges = [];
+let modalQty = 1;
 
 async function chargerCategories() {
   const { data, error } = await supabaseClient
@@ -33,6 +35,7 @@ function selectionnerCategorie(categorie, chipElement) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
   chipElement.classList.add('chip-active');
   offset = 0;
+  produitsCharges = [];
   chargerProduits();
 }
 
@@ -41,7 +44,7 @@ function carteProduitHtml(p) {
     id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
   }));
   return `
-    <div class="produit-card">
+    <div class="produit-card" data-id="${p.id}">
       <div class="produit-image">
         ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
       </div>
@@ -82,6 +85,8 @@ async function chargerProduits() {
     return;
   }
 
+  produitsCharges = produitsCharges.concat(data);
+
   const cartesHtml = data.map(carteProduitHtml).join('');
   conteneur.innerHTML = (offset === 0) ? cartesHtml : conteneur.innerHTML + cartesHtml;
 
@@ -90,6 +95,66 @@ async function chargerProduits() {
 }
 
 document.getElementById('bouton-voir-plus').addEventListener('click', chargerProduits);
+
+// ===================== MODAL DETAIL =====================
+function ouvrirDetailProduit(id) {
+  const p = produitsCharges.find(x => x.id === id);
+  if (!p) return;
+
+  modalQty = 1;
+  document.getElementById('modal-qty-valeur').textContent = '1';
+  document.getElementById('modal-image').src = p.image_url || '';
+  document.getElementById('modal-image').alt = p.nom;
+  document.getElementById('modal-categorie').textContent = p.categorie;
+  document.getElementById('modal-nom').textContent = p.nom;
+  document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
+
+  const taillesEl = document.getElementById('modal-tailles');
+  if (p.tailles) {
+    taillesEl.innerHTML = p.tailles.split(',').map(t => `<span>${t.trim()}</span>`).join('');
+  } else {
+    taillesEl.innerHTML = '';
+  }
+
+  document.getElementById('modal-ajouter').dataset.produit = encodeURIComponent(JSON.stringify({
+    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
+  }));
+
+  document.getElementById('produit-modal-overlay').classList.add('ouvert');
+}
+
+function fermerDetailProduit() {
+  document.getElementById('produit-modal-overlay').classList.remove('ouvert');
+}
+
+document.getElementById('produit-modal-fermer').addEventListener('click', fermerDetailProduit);
+document.getElementById('produit-modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'produit-modal-overlay') fermerDetailProduit();
+});
+
+document.getElementById('modal-qty-moins').addEventListener('click', () => {
+  if (modalQty > 1) modalQty--;
+  document.getElementById('modal-qty-valeur').textContent = modalQty;
+});
+document.getElementById('modal-qty-plus').addEventListener('click', () => {
+  modalQty++;
+  document.getElementById('modal-qty-valeur').textContent = modalQty;
+});
+
+document.getElementById('modal-ajouter').addEventListener('click', (e) => {
+  const produit = JSON.parse(decodeURIComponent(e.target.dataset.produit));
+  for (let i = 0; i < modalQty; i++) {
+    ajouterAuPanier(produit);
+  }
+  fermerDetailProduit();
+});
+
+document.getElementById('grille-produits').addEventListener('click', (e) => {
+  if (e.target.closest('.btn-ajouter')) return;
+  const card = e.target.closest('.produit-card');
+  if (card) ouvrirDetailProduit(card.dataset.id);
+});
 
 chargerCategories();
 chargerProduits();
