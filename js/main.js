@@ -89,8 +89,8 @@ function creerPanierDrawer() {
         <span>Total</span>
         <span id="panier-total-montant">0 GNF</span>
       </div>
-     <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
-     <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
         <select id="panier-indicatif" class="panier-input" style="flex:0 0 130px; margin-bottom:0;">
           <option value="224">🇬🇳 Guinée +224</option>
           <option value="225">🇨🇮 Côte d'Ivoire +225</option>
@@ -105,6 +105,12 @@ function creerPanierDrawer() {
         <input type="tel" id="panier-telephone" placeholder="Numéro (ex: 622334455)" class="panier-input" style="margin-bottom:0; flex:1;">
       </div>
       <input type="text" id="panier-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" class="panier-input" style="display:none;">
+      <select id="panier-zone" class="panier-input">
+        <option value="Retrait à Conakry">Retrait à Conakry</option>
+        <option value="Livraison France (Paris)">Livraison France (Paris)</option>
+        <option value="Livraison France (Angers)">Livraison France (Angers)</option>
+        <option value="Autre / à discuter">Autre destination (à discuter)</option>
+      </select>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
     </div>
@@ -193,6 +199,7 @@ async function envoyerCommande() {
     : indicatifSelect;
   const numeroLocal = document.getElementById('panier-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
   const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
+  const zone = document.getElementById('panier-zone').value;
 
   if (panier.length === 0) {
     alert('Votre panier est vide.');
@@ -210,11 +217,12 @@ async function envoyerCommande() {
     client_telephone: telephone,
     articles: panier,
     total: total,
-    statut: 'En attente'
+    statut: 'En attente',
+    zone_livraison: zone
   });
   if (error) console.error('Erreur enregistrement commande :', error);
 
-  const donneesCommande = { nom, telephone, articles: panier, total, date: new Date().toISOString() };
+  const donneesCommande = { nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
   const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
@@ -222,7 +230,7 @@ async function envoyerCommande() {
     `- ${item.nom} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
-  const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
+  const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
   const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
 
   window.open(lienWhatsApp, '_blank');
