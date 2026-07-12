@@ -3,6 +3,13 @@ let moisAffiche = new Date();
 moisAffiche.setDate(1);
 let dateChoisie = null;
 
+document.getElementById('sm-indicatif').addEventListener('change', (e) => {
+  const champ = document.getElementById('sm-telephone');
+  const champAutre = document.getElementById('sm-indicatif-autre');
+  champ.placeholder = e.target.value === '33' ? 'Numéro sans le 0 (ex: 612345678)' : 'Numéro (ex: 622334455)';
+  champAutre.style.display = e.target.value === 'autre' ? 'block' : 'none';
+});
+
 function formatDateISO(d) {
   return d.toISOString().split('T')[0];
 }
@@ -128,8 +135,11 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     return;
   }
 
- const nom = document.getElementById('sm-nom').value.trim();
-  const indicatif = document.getElementById('sm-indicatif').value;
+  const nom = document.getElementById('sm-nom').value.trim();
+  const indicatifSelect = document.getElementById('sm-indicatif').value;
+  const indicatif = indicatifSelect === 'autre'
+    ? document.getElementById('sm-indicatif-autre').value.trim().replace(/[^0-9]/g, '')
+    : indicatifSelect;
   const numeroLocal = document.getElementById('sm-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
   const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
   const vetement = document.getElementById('sm-vetement').value.trim();
