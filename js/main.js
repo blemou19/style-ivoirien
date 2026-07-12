@@ -89,8 +89,14 @@ function creerPanierDrawer() {
         <span>Total</span>
         <span id="panier-total-montant">0 GNF</span>
       </div>
-      <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
-      <input type="tel" id="panier-telephone" placeholder="Votre numéro de téléphone" class="panier-input">
+     <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <select id="panier-indicatif" class="panier-input" style="flex:0 0 110px; margin-bottom:0;">
+          <option value="224">🇬🇳 +224</option>
+          <option value="33">🇫🇷 +33</option>
+        </select>
+        <input type="tel" id="panier-telephone" placeholder="Numéro sans le 0" class="panier-input" style="margin-bottom:0;">
+      </div>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
     </div>
@@ -163,9 +169,10 @@ document.addEventListener('click', (e) => {
 
 async function envoyerCommande() {
   const panier = getPanier();
-  const nom = document.getElementById('panier-nom').value.trim();
-  const telephone = document.getElementById('panier-telephone').value.trim();
-
+ const nom = document.getElementById('panier-nom').value.trim();
+  const indicatif = document.getElementById('panier-indicatif').value;
+  const numeroLocal = document.getElementById('panier-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
+  const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
   if (panier.length === 0) {
     alert('Votre panier est vide.');
     return;
