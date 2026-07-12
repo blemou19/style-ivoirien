@@ -128,8 +128,10 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     return;
   }
 
-  const nom = document.getElementById('sm-nom').value.trim();
-  const telephone = document.getElementById('sm-telephone').value.trim();
+ const nom = document.getElementById('sm-nom').value.trim();
+  const indicatif = document.getElementById('sm-indicatif').value;
+  const numeroLocal = document.getElementById('sm-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
+  const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
   const vetement = document.getElementById('sm-vetement').value.trim();
   const mesures = collecterMesures();
   const mode = document.querySelector('input[name="mode"]:checked').value;
