@@ -125,7 +125,13 @@
 
     <form id="form-sur-mesure" class="form-sur-mesure">
       <input type="text" id="sm-nom" placeholder="Votre nom" required>
-      <input type="tel" id="sm-telephone" placeholder="Votre numéro de téléphone" required>
+     <div style="display:flex; gap:8px;">
+        <select id="sm-indicatif" style="flex:0 0 110px;">
+          <option value="224">🇬🇳 +224</option>
+          <option value="33">🇫🇷 +33</option>
+        </select>
+        <input type="tel" id="sm-telephone" placeholder="Numéro sans le 0" required>
+      </div>
       <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
 <div class="sm-mesures-toggle">
   <p class="sm-label">Connaissez-vous vos mesures ?</p>
