@@ -125,7 +125,7 @@
 
     <form id="form-sur-mesure" class="form-sur-mesure">
       <input type="text" id="sm-nom" placeholder="Votre nom" required>
-     <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px;">
         <select id="sm-indicatif" style="flex:0 0 130px;">
           <option value="224">🇬🇳 Guinée +224</option>
           <option value="225">🇨🇮 Côte d'Ivoire +225</option>
@@ -141,38 +141,49 @@
       </div>
       <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
       <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
-<div class="sm-mesures-toggle">
-  <p class="sm-label">Connaissez-vous vos mesures ?</p>
-  <div class="sm-mode">
-    <label><input type="radio" name="sait-mesures" value="non" checked> Non, à prendre sur place</label>
-    <label><input type="radio" name="sait-mesures" value="oui"> Oui, je les connais</label>
-  </div>
-</div>
 
-<div id="bloc-mesures" class="mesures-grid" style="display:none;">
-  <label class="mesure-champ">Tour de poitrine
-    <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
-  </label>
-  <label class="mesure-champ">Tour de taille
-    <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
-  </label>
-  <label class="mesure-champ">Tour de hanches
-    <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
-  </label>
-  <label class="mesure-champ">Longueur souhaitée
-    <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
-  </label>
-  <label class="mesure-champ">Tour de bras
-    <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
-  </label>
-  <label class="mesure-champ">Épaules
-    <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
-  </label>
-</div>      <div class="sm-mode">
+      <div class="sm-mesures-toggle">
+        <p class="sm-label">Connaissez-vous vos mesures ?</p>
+        <div class="sm-mode">
+          <label><input type="radio" name="sait-mesures" value="non" checked> Non, à prendre sur place</label>
+          <label><input type="radio" name="sait-mesures" value="oui"> Oui, je les connais</label>
+        </div>
+      </div>
+
+      <div id="bloc-mesures" class="mesures-grid" style="display:none;">
+        <label class="mesure-champ">Tour de poitrine
+          <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de taille
+          <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de hanches
+          <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Longueur souhaitée
+          <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de bras
+          <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Épaules
+          <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
+        </label>
+      </div>
+
+      <div class="sm-mode">
         <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
         <label><input type="radio" name="mode" value="En ligne (WhatsApp, téléphone...)"> En ligne</label>
       </div>
-     <select id="sm-heure" required>
+
+      <select id="sm-zone">
+        <option value="Retrait à Conakry">Retrait à Conakry</option>
+        <option value="Livraison France (Paris)">Livraison France (Paris)</option>
+        <option value="Livraison France (Angers)">Livraison France (Angers)</option>
+        <option value="Autre / à discuter">Autre destination (à discuter)</option>
+      </select>
+
+      <select id="sm-heure" required>
         <option>09h00</option><option>10h00</option><option>11h00</option><option>12h00</option>
         <option>13h00</option><option>14h00</option><option>15h00</option><option>16h00</option>
         <option>17h00</option><option>18h00</option>
