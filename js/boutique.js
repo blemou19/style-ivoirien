@@ -3,6 +3,7 @@ let currentCategorie = null;
 let offset = 0;
 let produitsCharges = [];
 let modalQty = 1;
+let modalTailleChoisie = '';
 
 async function chargerCategories() {
   const { data, error } = await supabaseClient
@@ -52,7 +53,7 @@ function carteProduitHtml(p) {
         <span class="produit-categorie">${p.categorie}</span>
         <h3 class="produit-nom">${p.nom}</h3>
         <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-        <button class="btn-ajouter" data-produit="${produitData}">Ajouter au panier</button>
+        <button class="btn-ajouter" data-produit="${produitData}" data-id="${p.id}">Ajouter au panier</button>
       </div>
     </div>
   `;
@@ -102,6 +103,7 @@ function ouvrirDetailProduit(id) {
   if (!p) return;
 
   modalQty = 1;
+  modalTailleChoisie = '';
   document.getElementById('modal-qty-valeur').textContent = '1';
   document.getElementById('modal-image').src = p.image_url || '';
   document.getElementById('modal-image').alt = p.nom;
@@ -112,8 +114,13 @@ function ouvrirDetailProduit(id) {
 
   const taillesEl = document.getElementById('modal-tailles');
   if (p.tailles) {
-    taillesEl.innerHTML = p.tailles.split(',').map(t => `<span>${t.trim()}</span>`).join('');
+    const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
+    modalTailleChoisie = listeTailles[0] || '';
+    taillesEl.innerHTML = listeTailles.map((t, i) =>
+      `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${t}">${t}</span>`
+    ).join('');
   } else {
+    modalTailleChoisie = '';
     taillesEl.innerHTML = '';
   }
 
@@ -133,6 +140,14 @@ document.getElementById('produit-modal-overlay').addEventListener('click', (e) =
   if (e.target.id === 'produit-modal-overlay') fermerDetailProduit();
 });
 
+document.getElementById('modal-tailles').addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-taille]');
+  if (!chip) return;
+  modalTailleChoisie = chip.dataset.taille;
+  document.querySelectorAll('#modal-tailles span').forEach(s => s.classList.remove('taille-active'));
+  chip.classList.add('taille-active');
+});
+
 document.getElementById('modal-qty-moins').addEventListener('click', () => {
   if (modalQty > 1) modalQty--;
   document.getElementById('modal-qty-valeur').textContent = modalQty;
@@ -144,6 +159,7 @@ document.getElementById('modal-qty-plus').addEventListener('click', () => {
 
 document.getElementById('modal-ajouter').addEventListener('click', (e) => {
   const produit = JSON.parse(decodeURIComponent(e.target.dataset.produit));
+  produit.taille = modalTailleChoisie || '';
   for (let i = 0; i < modalQty; i++) {
     ajouterAuPanier(produit);
   }
@@ -151,7 +167,14 @@ document.getElementById('modal-ajouter').addEventListener('click', (e) => {
 });
 
 document.getElementById('grille-produits').addEventListener('click', (e) => {
-  if (e.target.closest('.btn-ajouter')) return;
+  const boutonAjouter = e.target.closest('.btn-ajouter');
+  if (boutonAjouter) {
+    const p = produitsCharges.find(x => x.id === boutonAjouter.dataset.id);
+    if (p && p.tailles) {
+      ouvrirDetailProduit(p.id);
+    }
+    return;
+  }
   const card = e.target.closest('.produit-card');
   if (card) ouvrirDetailProduit(card.dataset.id);
 });
