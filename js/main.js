@@ -41,28 +41,29 @@ function mettreAJourBadge() {
 
 function ajouterAuPanier(produit) {
   const panier = getPanier();
-  const existant = panier.find(item => item.id === produit.id);
+  const taille = produit.taille || '';
+  const existant = panier.find(item => item.id === produit.id && (item.taille || '') === taille);
   if (existant) {
     existant.qty += 1;
   } else {
-    panier.push({ ...produit, qty: 1 });
+    panier.push({ ...produit, taille, qty: 1 });
   }
   savePanier(panier);
   ouvrirPanier();
 }
 
-function modifierQuantite(id, delta) {
+function modifierQuantite(id, taille, delta) {
   const panier = getPanier();
-  const item = panier.find(i => i.id === id);
+  const item = panier.find(i => i.id === id && (i.taille || '') === (taille || ''));
   if (!item) return;
   item.qty += delta;
-  const nouveauPanier = item.qty <= 0 ? panier.filter(i => i.id !== id) : panier;
+  const nouveauPanier = item.qty <= 0 ? panier.filter(i => !(i.id === id && (i.taille || '') === (taille || ''))) : panier;
   savePanier(nouveauPanier);
   afficherPanier();
 }
 
-function supprimerDuPanier(id) {
-  savePanier(getPanier().filter(i => i.id !== id));
+function supprimerDuPanier(id, taille) {
+  savePanier(getPanier().filter(i => !(i.id === id && (i.taille || '') === (taille || ''))));
   afficherPanier();
 }
 
@@ -157,15 +158,15 @@ function afficherPanier() {
           ${item.image_url ? `<img src="${item.image_url}" alt="${item.nom}">` : ''}
         </div>
         <div class="panier-item-info">
-          <span class="panier-item-nom">${item.nom}</span>
+          <span class="panier-item-nom">${item.nom}${item.taille ? ` — Taille ${item.taille}` : ''}</span>
           <span class="panier-item-prix">${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
           <div class="panier-item-qty">
-            <button data-action="moins" data-id="${item.id}">−</button>
+            <button data-action="moins" data-id="${item.id}" data-taille="${item.taille || ''}">−</button>
             <span>${item.qty}</span>
-            <button data-action="plus" data-id="${item.id}">+</button>
+            <button data-action="plus" data-id="${item.id}" data-taille="${item.taille || ''}">+</button>
           </div>
         </div>
-        <button class="panier-item-supprimer" data-action="supprimer" data-id="${item.id}">Retirer</button>
+        <button class="panier-item-supprimer" data-action="supprimer" data-id="${item.id}" data-taille="${item.taille || ''}">Retirer</button>
       </div>
     `).join('');
   }
@@ -175,14 +176,14 @@ function afficherPanier() {
 
 document.addEventListener('click', (e) => {
   const target = e.target;
-  if (target.matches('[data-action="moins"]')) modifierQuantite(target.dataset.id, -1);
-  if (target.matches('[data-action="plus"]')) modifierQuantite(target.dataset.id, 1);
-  if (target.matches('[data-action="supprimer"]')) supprimerDuPanier(target.dataset.id);
+  if (target.matches('[data-action="moins"]')) modifierQuantite(target.dataset.id, target.dataset.taille, -1);
+  if (target.matches('[data-action="plus"]')) modifierQuantite(target.dataset.id, target.dataset.taille, 1);
+  if (target.matches('[data-action="supprimer"]')) supprimerDuPanier(target.dataset.id, target.dataset.taille);
 
   const boutonAjouter = target.closest('.btn-ajouter');
-  if (boutonAjouter) {
+  if (boutonAjouter && boutonAjouter.dataset.produit) {
     const produit = JSON.parse(decodeURIComponent(boutonAjouter.dataset.produit));
-    ajouterAuPanier(produit);
+    if (!produit.tailleRequise) ajouterAuPanier(produit);
   }
 
   if (target.closest('.cart-btn')) {
@@ -227,7 +228,7 @@ async function envoyerCommande() {
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
   const lignes = panier.map(item =>
-    `- ${item.nom} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
+    `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
   const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
