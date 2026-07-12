@@ -126,12 +126,20 @@
     <form id="form-sur-mesure" class="form-sur-mesure">
       <input type="text" id="sm-nom" placeholder="Votre nom" required>
      <div style="display:flex; gap:8px;">
-        <select id="sm-indicatif" style="flex:0 0 110px;">
-          <option value="224">🇬🇳 +224</option>
-          <option value="33">🇫🇷 +33</option>
+        <select id="sm-indicatif" style="flex:0 0 130px;">
+          <option value="224">🇬🇳 Guinée +224</option>
+          <option value="225">🇨🇮 Côte d'Ivoire +225</option>
+          <option value="223">🇲🇱 Mali +223</option>
+          <option value="221">🇸🇳 Sénégal +221</option>
+          <option value="229">🇧🇯 Bénin +229</option>
+          <option value="228">🇹🇬 Togo +228</option>
+          <option value="226">🇧🇫 Burkina Faso +226</option>
+          <option value="33">🇫🇷 France +33</option>
+          <option value="autre">🌍 Autre pays</option>
         </select>
-        <input type="tel" id="sm-telephone" placeholder="Numéro sans le 0" required>
+        <input type="tel" id="sm-telephone" placeholder="Numéro (ex: 622334455)" required style="flex:1;">
       </div>
+      <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
       <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
 <div class="sm-mesures-toggle">
   <p class="sm-label">Connaissez-vous vos mesures ?</p>
