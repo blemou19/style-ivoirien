@@ -719,3 +719,6 @@
 .produit-modal-qty button{
   width:32px; height:32px; border-radius:50%; border:1px solid var(--ink); background:none; cursor:pointer; font-size:16px;
 }
+
+.produit-modal-tailles span{ cursor:pointer; transition: background .15s ease, color .15s ease; }
+.produit-modal-tailles span.taille-active{ background: var(--ink); color: var(--cream); }
