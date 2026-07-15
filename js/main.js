@@ -252,40 +252,5 @@ async function envoyerCommande() {
   if (error) console.error('Erreur enregistrement commande :', error);
 }
 
-  const total = calculerTotal(panier);
-  const reference = genererReference();
-
-  const { error } = await supabaseClient.from('commandes').insert({
-    client_nom: nom,
-    client_telephone: telephone,
-    articles: panier,
-    total: total,
-    statut: 'En attente',
-    zone_livraison: zone,
-    reference: reference
-  });
-  if (error) console.error('Erreur enregistrement commande :', error);
-
-  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
-  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-  const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
-
-  const lignes = panier.map(item =>
-    `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
-  ).join('\n');
-
-  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
-
-  window.open(`https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
-
-  if (zone.startsWith('Livraison France')) {
-    const messageFrance = `🇫🇷 Nouvelle commande à destination de la France (réf. ${reference}) :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nClient : ${nom} — ${telephone}`;
-    window.open(`https://wa.me/${NUMERO_WHATSAPP_FRANCE}?text=${encodeURIComponent(messageFrance)}`, '_blank');
-  }
-
-  savePanier([]);
-  fermerPanier();
-}
-
 creerPanierDrawer();
 mettreAJourBadge();
