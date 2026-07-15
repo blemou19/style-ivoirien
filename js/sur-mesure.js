@@ -78,12 +78,11 @@ async function choisirDate(dateStr, cell) {
     .eq('date_souhaitee', dateStr)
     .neq('statut', 'Annulé');
 
-  const heuresPrises = (data || []).map(r => r.heure_souhaitee);
-  document.querySelectorAll('#sm-heure option').forEach(opt => {
-    const prise = heuresPrises.includes(opt.value);
-    opt.disabled = prise;
-    opt.textContent = opt.value + (prise ? ' (déjà pris)' : '');
-  });
+  const heuresPrises = (data || []).map(r => r.heure_souhaitee).filter(Boolean);
+  const affichage = document.getElementById('heures-prises-affichage');
+  affichage.textContent = heuresPrises.length > 0
+    ? `Créneaux déjà pris ce jour : ${heuresPrises.join(', ')}`
+    : '';
 }
 
 document.getElementById('mois-prec').addEventListener('click', () => {
