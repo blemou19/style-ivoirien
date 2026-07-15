@@ -19,7 +19,17 @@ mainNav.querySelectorAll('a').forEach(link => {
 
 // ===================== PANIER =====================
 const PANIER_KEY = 'style_ivoirien_panier';
-const NUMERO_WHATSAPP = '33744192080';
+const NUMERO_WHATSAPP = '224626321860';
+const NUMERO_WHATSAPP_FRANCE = '33744192080';
+
+function genererReference() {
+  const d = new Date();
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `SI-${yy}${mm}${dd}-${rand}`;
+}
 
 function getPanier() {
   try {
@@ -212,6 +222,7 @@ async function envoyerCommande() {
   }
 
   const total = calculerTotal(panier);
+  const reference = genererReference();
 
   const { error } = await supabaseClient.from('commandes').insert({
     client_nom: nom,
@@ -219,11 +230,12 @@ async function envoyerCommande() {
     articles: panier,
     total: total,
     statut: 'En attente',
-    zone_livraison: zone
+    zone_livraison: zone,
+    reference: reference
   });
   if (error) console.error('Erreur enregistrement commande :', error);
 
-  const donneesCommande = { nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
+  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
   const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
@@ -231,10 +243,15 @@ async function envoyerCommande() {
     `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
-  const message = `Bonjour, je souhaite commander :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
-  const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
+  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
 
-  window.open(lienWhatsApp, '_blank');
+  window.open(`https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+
+  if (zone.startsWith('Livraison France')) {
+    const messageFrance = `🇫🇷 Nouvelle commande à destination de la France (réf. ${reference}) :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nClient : ${nom} — ${telephone}`;
+    window.open(`https://wa.me/${NUMERO_WHATSAPP_FRANCE}?text=${encodeURIComponent(messageFrance)}`, '_blank');
+  }
+
   savePanier([]);
   fermerPanier();
 }
