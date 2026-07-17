@@ -31,6 +31,7 @@ function afficherAdmin() {
   chargerRendezVousAdmin();
   chargerIndisponibilitesAdmin();
   chargerAvisAdmin();
+  chargerModelesAdmin();
 }
 
 document.getElementById('admin-deconnexion').addEventListener('click', async () => {
@@ -286,7 +287,7 @@ async function chargerRendezVousAdmin() {
     <tr>
       <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
       <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
-      <td>${r.type_vetement}</td>
+      <td>${r.type_vetement}${r.modele_ref ? `<br><span style="color:#7a6f64; font-size:11px;">Catalogue : ${r.modele_ref}</span>` : ''}</td>
       <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.zone_livraison || ''}</span></td>
       <td>
         <select data-id="${r.id}" class="select-statut-rdv">
@@ -398,4 +399,71 @@ async function chargerAvisAdmin() {
   });
 }
 
-verifierSession();
+// ===================== CATALOGUE (MODELES) =====================
+let modelesCache = [];
+
+function commencerEditionModele(id) {
+  const m = modelesCache.find(x => x.id === id);
+  if (!m) return;
+
+  document.getElementById('m-edit-id').value = m.id;
+  document.getElementById('m-nom').value = m.nom;
+  document.getElementById('m-categorie').value = m.categorie;
+  document.getElementById('m-description').value = m.description || '';
+  document.getElementById('m-image').value = m.image_url || '';
+  document.getElementById('m-video').value = m.video_url || '';
+  document.getElementById('m-image-actuelle-label').textContent = m.image_url ? '(une photo existe déjà)' : '';
+  document.getElementById('m-video-actuelle-label').textContent = m.video_url ? '(une vidéo existe déjà)' : '';
+  document.getElementById('m-submit-btn').textContent = 'Enregistrer les modifications';
+  document.getElementById('m-annuler-btn').style.display = 'inline-flex';
+  document.getElementById('form-nouveau-modele').scrollIntoView({ behavior: 'smooth' });
+}
+
+function annulerEditionModele() {
+  document.getElementById('form-nouveau-modele').reset();
+  document.getElementById('m-edit-id').value = '';
+  document.getElementById('m-image').value = '';
+  document.getElementById('m-video').value = '';
+  document.getElementById('m-image-actuelle-label').textContent = '';
+  document.getElementById('m-video-actuelle-label').textContent = '';
+  document.getElementById('m-submit-btn').textContent = 'Ajouter le modèle';
+  document.getElementById('m-annuler-btn').style.display = 'none';
+}
+document.getElementById('m-annuler-btn').addEventListener('click', annulerEditionModele);
+
+document.getElementById('form-nouveau-modele').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const boutonSubmit = document.getElementById('m-submit-btn');
+  const statutEl = document.getElementById('m-image-statut');
+  const fichierImage = document.getElementById('m-image-file').files[0];
+  const fichierVideo = document.getElementById('m-video-file').files[0];
+  const editId = document.getElementById('m-edit-id').value;
+
+  boutonSubmit.disabled = true;
+  boutonSubmit.textContent = 'Envoi en cours...';
+
+  let imageUrl = document.getElementById('m-image').value || '';
+  let videoUrl = document.getElementById('m-video').value || '';
+
+  if (fichierImage) {
+    statutEl.textContent = 'Envoi de la photo...';
+    const nomFichier = `modele-${Date.now()}-${fichierImage.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUpload } = await supabaseClient.storage.from('produits').upload(nomFichier, fichierImage);
+    if (erreurUpload) {
+      alert("Erreur lors de l'envoi de la photo : " + erreurUpload.message);
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le modèle';
+      statutEl.textContent = '';
+      return;
+    }
+    const { data: urlData } = supabaseClient.storage.from('produits').getPublicUrl(nomFichier);
+    imageUrl = urlData.publicUrl;
+  }
+
+  if (fichierVideo) {
+    statutEl.textContent = 'Envoi de la vidéo...';
+    const nomFichierVideo = `modele-${Date.now()}-${fichierVideo.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUploadVideo } = await supabaseClient.storage.from('produits').upload(nomFichierVideo, fichierVideo);
+    if (erreurUploadVideo) {
+      alert("Erreur lors de l'envoi de la vidéo : " + erreurUploadVideo.message);
+      boutonSubmit.disabled = false;
