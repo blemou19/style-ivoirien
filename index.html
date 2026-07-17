@@ -25,6 +25,7 @@
 
     <nav id="mainNav">
       <a href="boutique.html">Boutique</a>
+      <a href="catalogue.html">Catalogue</a>
       <a href="#sur-mesure">Sur mesure</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -75,7 +76,6 @@
           <circle cx="76" cy="50" r="3"/>
         </g>
       </svg>
-    
     </div>
   </div>
 </section>
@@ -118,6 +118,18 @@
     <p id="date-choisie-affichage" class="date-choisie-affichage">Choisissez une date dans le calendrier ci-dessus.</p>
 
     <form id="form-sur-mesure" class="form-sur-mesure">
+      <div id="modele-choisi-box" class="modele-choisi-box" style="display:none;">
+        <img id="modele-choisi-img" src="" alt="">
+        <div>
+          <p class="sm-label" style="margin:0;">Modèle choisi dans le catalogue :</p>
+          <p id="modele-choisi-nom" style="margin:2px 0 0; font-family:var(--font-display); font-size:16px;"></p>
+        </div>
+        <button type="button" id="modele-choisi-retirer" class="admin-action-btn">Retirer</button>
+      </div>
+      <p style="font-size:13px; color:#7a6f64; margin:0 0 4px;">
+        Pas encore d'idée précise ? <a href="catalogue.html" style="color:var(--terracotta-dark);">Parcourez notre catalogue d'inspiration</a>.
+      </p>
+
       <input type="text" id="sm-nom" placeholder="Votre nom" required>
       <div style="display:flex; gap:8px;">
         <select id="sm-indicatif" style="flex:0 0 130px;">
@@ -206,6 +218,7 @@
     <div class="footer-links">
       <h4>Navigation</h4>
       <a href="boutique.html">Boutique</a>
+      <a href="catalogue.html">Catalogue</a>
       <a href="#sur-mesure">Sur mesure</a>
     </div>
     <div class="footer-links">
