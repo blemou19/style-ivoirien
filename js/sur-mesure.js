@@ -1,3 +1,23 @@
+const paramsUrl = new URLSearchParams(window.location.search);
+let modeleChoisi = null;
+const modeleParam = paramsUrl.get('modele');
+if (modeleParam) {
+  try {
+    modeleChoisi = JSON.parse(decodeURIComponent(modeleParam));
+    document.getElementById('sm-vetement').value = modeleChoisi.nom;
+    document.getElementById('modele-choisi-box').style.display = 'flex';
+    document.getElementById('modele-choisi-nom').textContent = modeleChoisi.nom;
+    if (modeleChoisi.image_url) document.getElementById('modele-choisi-img').src = modeleChoisi.image_url;
+  } catch (e) {
+    modeleChoisi = null;
+  }
+}
+document.getElementById('modele-choisi-retirer')?.addEventListener('click', () => {
+  modeleChoisi = null;
+  document.getElementById('modele-choisi-box').style.display = 'none';
+  document.getElementById('sm-vetement').value = '';
+});
+
 let indispoRanges = [];
 let moisAffiche = new Date();
 moisAffiche.setDate(1);
@@ -94,7 +114,6 @@ document.getElementById('mois-suiv').addEventListener('click', () => {
   genererCalendrier();
 });
 
-// ===================== TOGGLE MESURES =====================
 document.querySelectorAll('input[name="sait-mesures"]').forEach(radio => {
   radio.addEventListener('change', () => {
     document.getElementById('bloc-mesures').style.display =
@@ -125,7 +144,6 @@ function collecterMesures() {
   return lignes.length > 0 ? lignes.join(', ') : "Mesures à confirmer avec la cliente";
 }
 
-// ===================== SOUMISSION =====================
 document.getElementById('form-sur-mesure').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -161,7 +179,9 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     date_souhaitee: dateChoisie,
     heure_souhaitee: heure,
     notes: notes,
-    statut: 'Nouvelle demande'
+    statut: 'Nouvelle demande',
+    modele_ref: modeleChoisi ? modeleChoisi.nom : null,
+    modele_image: modeleChoisi ? modeleChoisi.image_url : null
   });
 
   if (error) {
@@ -175,6 +195,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
   const message = `Bonjour, je souhaite une création sur mesure :\n` +
     `Vêtement : ${vetement}\n` +
+    (modeleChoisi ? `Modèle inspiré du catalogue : ${modeleChoisi.nom}${modeleChoisi.image_url ? ' (' + modeleChoisi.image_url + ')' : ''}\n` : '') +
     `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
@@ -186,6 +207,8 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
   document.getElementById('form-sur-mesure').reset();
   document.getElementById('bloc-mesures').style.display = 'none';
+  document.getElementById('modele-choisi-box').style.display = 'none';
+  modeleChoisi = null;
   dateChoisie = null;
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
