@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <header>
   <div class="header-inner">
     <a href="index.html" class="logo">
@@ -22,13 +21,11 @@
         <span class="line2">COUTURE &amp; BOUTIQUE</span>
       </span>
     </a>
-
     <nav id="mainNav">
       <a href="boutique.html">Boutique</a>
       <a href="index.html#sur-mesure">Sur mesure</a>
       <a href="index.html#contact">Contact</a>
     </nav>
-
     <div class="nav-actions">
       <button class="cart-btn" aria-label="Panier">
         Panier <span class="cart-count">0</span>
@@ -39,15 +36,14 @@
     </div>
   </div>
 </header>
-
 <div class="page-header-lite">
   <p class="eyebrow">La collection complète</p>
   <h1>Notre boutique</h1>
   <p>Tous nos modèles disponibles à l'achat, filtrez par catégorie.</p>
 </div>
-
 <section>
   <div class="wrap">
+    <input type="search" id="recherche-produits" class="recherche-produits" placeholder="Rechercher un produit...">
     <div id="filtres-categories" class="filtres-categories"></div>
     <div id="grille-produits" class="produits-grid">
       <p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Chargement des produits...</p>
@@ -55,16 +51,14 @@
     <div class="voir-plus-wrap">
       <button id="bouton-voir-plus" class="btn btn-outline" style="display:none;">Voir plus</button>
     </div>
-
     <div id="produit-modal-overlay" class="produit-modal-overlay">
       <div class="produit-modal">
         <button id="produit-modal-fermer" class="produit-modal-fermer" aria-label="Fermer">&times;</button>
-        <div class="produit-modal-image">
-          <img id="modal-image" src="" alt="">
-        </div>
+        <div class="produit-modal-image" id="modal-media"></div>
         <div class="produit-modal-info">
           <span id="modal-categorie" class="produit-categorie"></span>
           <h2 id="modal-nom"></h2>
+          <span id="modal-ref" style="font-family:var(--font-mono); font-size:11px; color:#7a6f64;"></span>
           <span id="modal-prix" class="produit-modal-prix"></span>
           <p id="modal-desc" class="produit-modal-desc"></p>
           <div id="modal-tailles" class="produit-modal-tailles"></div>
@@ -79,7 +73,6 @@
     </div>
   </div>
 </section>
-
 <footer id="contact">
   <div class="footer-inner">
     <div>
@@ -102,7 +95,6 @@
     <a href="admin.html" class="admin-link">Espace pro</a>
   </div>
 </footer>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/main.js"></script>
 <script src="js/boutique.js"></script>
