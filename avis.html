@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laisser un avis — Style Ivoirien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">
+        <img src="img/logo.png" alt="Style Ivoirien">
+      </span>
+      <span class="logo-text">
+        <span class="line1">Style Ivoirien</span>
+        <span class="line2">COUTURE &amp; BOUTIQUE</span>
+      </span>
+    </a>
+  </div>
+</header>
+
+<div class="page-header-lite">
+  <p class="eyebrow">Votre expérience</p>
+  <h1>Laisser un avis</h1>
+  <p>Votre avis aide Style Ivoirien et guide les futurs clients.</p>
+</div>
+
+<section>
+  <div class="wrap" style="max-width:480px;">
+    <form id="form-avis" class="form-sur-mesure">
+      <input type="text" id="avis-nom" placeholder="Votre nom" required>
+
+      <p class="sm-label">Concernant</p>
+      <div class="sm-mode">
+        <label><input type="radio" name="avis-type" value="commande" checked> Une commande boutique</label>
+        <label><input type="radio" name="avis-type" value="rendez_vous"> Une création sur mesure</label>
+      </div>
+
+      <p class="sm-label">Votre note</p>
+      <div id="avis-etoiles" class="avis-etoiles">
+        <span data-valeur="1">★</span>
+        <span data-valeur="2">★</span>
+        <span data-valeur="3">★</span>
+        <span data-valeur="4">★</span>
+        <span data-valeur="5">★</span>
+      </div>
+
+      <textarea id="avis-commentaire" placeholder="Votre commentaire (optionnel)" rows="4"></textarea>
+
+      <button type="submit" class="btn btn-primary">Envoyer mon avis</button>
+      <p id="avis-message" style="font-size:13px; text-align:center; color:#7a6f64;"></p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-bottom" style="max-width:1100px; margin:0 auto; padding:24px;">
+    <span>© 2026 Style Ivoirien</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  const SUPABASE_URL = "https://shuzyobfytegnlyulgdj.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_AHhrwdfio4wPM2kcUjdZ8w_DReukYdM";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+<script src="js/avis.js"></script>
+</body>
+</html>
