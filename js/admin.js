@@ -467,3 +467,84 @@ document.getElementById('form-nouveau-modele').addEventListener('submit', async 
     if (erreurUploadVideo) {
       alert("Erreur lors de l'envoi de la vidéo : " + erreurUploadVideo.message);
       boutonSubmit.disabled = false;
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le modèle';
+      statutEl.textContent = '';
+      return;
+    }
+    const { data: urlDataVideo } = supabaseClient.storage.from('produits').getPublicUrl(nomFichierVideo);
+    videoUrl = urlDataVideo.publicUrl;
+  }
+
+  statutEl.textContent = '';
+
+  const donneesModele = {
+    nom: document.getElementById('m-nom').value.trim(),
+    categorie: document.getElementById('m-categorie').value.trim(),
+    description: document.getElementById('m-description').value.trim(),
+    image_url: imageUrl,
+    video_url: videoUrl,
+  };
+
+  let error;
+  if (editId) {
+    ({ error } = await supabaseClient.from('modeles').update(donneesModele).eq('id', editId));
+  } else {
+    ({ error } = await supabaseClient.from('modeles').insert({ ...donneesModele, actif: true }));
+  }
+
+  boutonSubmit.disabled = false;
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le modèle';
+    return;
+  }
+
+  annulerEditionModele();
+  chargerModelesAdmin();
+});
+
+async function chargerModelesAdmin() {
+  const { data, error } = await supabaseClient.from('modeles').select('*').order('cree_le', { ascending: false });
+  const tbody = document.getElementById('tbody-modeles');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  modelesCache = data;
+
+  tbody.innerHTML = data.map(m => `
+    <tr>
+      <td>${m.image_url ? `<img src="${m.image_url}" alt="">` : '—'}</td>
+      <td style="font-family:var(--font-mono); font-size:11px;">${m.num ? `M-${String(m.num).padStart(4,'0')}` : '—'}</td>
+      <td>${m.nom}${m.video_url ? ' 🎥' : ''}</td>
+      <td>${m.categorie}</td>
+      <td>
+        <select data-id="${m.id}" class="select-actif-modele">
+          <option value="true" ${m.actif ? 'selected' : ''}>Visible</option>
+          <option value="false" ${!m.actif ? 'selected' : ''}>Masqué</option>
+        </select>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${m.id}" data-action="modifier-modele">Modifier</button>
+        <button class="admin-action-btn" data-id="${m.id}" data-action="supprimer-modele">Supprimer</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-actif-modele').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('modeles').update({ actif: sel.value === 'true' }).eq('id', sel.dataset.id);
+    });
+  });
+  document.querySelectorAll('[data-action="supprimer-modele"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Supprimer ce modèle définitivement ?')) return;
+      await supabaseClient.from('modeles').delete().eq('id', btn.dataset.id);
+      chargerModelesAdmin();
+    });
+  });
+  document.querySelectorAll('[data-action="modifier-modele"]').forEach(btn => {
+    btn.addEventListener('click', () => commencerEditionModele(btn.dataset.id));
+  });
+}
+
+verifierSession();
