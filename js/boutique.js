@@ -1,9 +1,11 @@
 const PAGE_SIZE = 12;
 let currentCategorie = null;
+let currentRecherche = '';
 let offset = 0;
 let produitsCharges = [];
 let modalQty = 1;
 let modalTailleChoisie = '';
+let timeoutRecherche = null;
 
 async function chargerCategories() {
   const { data, error } = await supabaseClient
@@ -40,6 +42,20 @@ function selectionnerCategorie(categorie, chipElement) {
   chargerProduits();
 }
 
+document.getElementById('recherche-produits').addEventListener('input', (e) => {
+  clearTimeout(timeoutRecherche);
+  timeoutRecherche = setTimeout(() => {
+    currentRecherche = e.target.value.trim();
+    offset = 0;
+    produitsCharges = [];
+    chargerProduits();
+  }, 350);
+});
+
+function formatRefProduit(num) {
+  return num ? `P-${String(num).padStart(4, '0')}` : '';
+}
+
 function carteProduitHtml(p) {
   const produitData = encodeURIComponent(JSON.stringify({
     id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
@@ -48,6 +64,7 @@ function carteProduitHtml(p) {
     <div class="produit-card" data-id="${p.id}">
       <div class="produit-image">
         ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
+        ${p.video_url ? '<span class="badge-video">🎥 Vidéo</span>' : ''}
       </div>
       <div class="produit-info">
         <span class="produit-categorie">${p.categorie}</span>
@@ -71,6 +88,7 @@ async function chargerProduits() {
     .range(offset, offset + PAGE_SIZE - 1);
 
   if (currentCategorie) requete = requete.eq('categorie', currentCategorie);
+  if (currentRecherche) requete = requete.ilike('nom', `%${currentRecherche}%`);
 
   const { data, error } = await requete;
 
@@ -81,7 +99,7 @@ async function chargerProduits() {
   }
 
   if (offset === 0 && data.length === 0) {
-    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun produit dans cette catégorie pour le moment.</p>';
+    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun produit trouvé.</p>';
     boutonVoirPlus.style.display = 'none';
     return;
   }
@@ -105,10 +123,19 @@ function ouvrirDetailProduit(id) {
   modalQty = 1;
   modalTailleChoisie = '';
   document.getElementById('modal-qty-valeur').textContent = '1';
-  document.getElementById('modal-image').src = p.image_url || '';
-  document.getElementById('modal-image').alt = p.nom;
+
+  const media = document.getElementById('modal-media');
+  if (p.video_url) {
+    media.innerHTML = `<video src="${p.video_url}" controls playsinline ${p.image_url ? `poster="${p.image_url}"` : ''}></video>`;
+  } else if (p.image_url) {
+    media.innerHTML = `<img src="${p.image_url}" alt="${p.nom}">`;
+  } else {
+    media.innerHTML = '';
+  }
+
   document.getElementById('modal-categorie').textContent = p.categorie;
   document.getElementById('modal-nom').textContent = p.nom;
+  document.getElementById('modal-ref').textContent = formatRefProduit(p.num);
   document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
   document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
 
@@ -132,6 +159,7 @@ function ouvrirDetailProduit(id) {
 }
 
 function fermerDetailProduit() {
+  document.getElementById('modal-media').innerHTML = '';
   document.getElementById('produit-modal-overlay').classList.remove('ouvert');
 }
 
