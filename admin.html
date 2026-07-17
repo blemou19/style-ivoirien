@@ -33,6 +33,7 @@
     <button class="admin-tab" data-panel="commandes">Commandes</button>
     <button class="admin-tab" data-panel="rdv">Rendez-vous</button>
     <button class="admin-tab" data-panel="dispo">Disponibilités</button>
+    <button class="admin-tab" data-panel="avis">Avis</button>
   </div>
 
   <div id="panel-produits" class="admin-panel actif">
@@ -42,6 +43,7 @@
       <input type="text" id="p-categorie" placeholder="Catégorie (ex: Robes)" required>
       <input type="number" id="p-prix" placeholder="Prix en GNF" required>
       <input type="text" id="p-tailles" placeholder="Tailles (ex: S,M,L)">
+      <input type="number" id="p-stock" placeholder="Stock disponible (laisser vide = illimité)" min="0">
       <label class="full" style="font-size:13px; color:#7a6f64;">
         Photo du produit <span id="p-image-actuelle-label" style="color:var(--terracotta-dark);"></span>
         <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
@@ -60,7 +62,7 @@
       </div>
     </form>
     <table class="admin-table">
-      <thead><tr><th>Photo</th><th>Réf.</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th></th></tr></thead>
+      <thead><tr><th>Photo</th><th>Réf.</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Statut</th><th></th></tr></thead>
       <tbody id="tbody-produits"></tbody>
     </table>
   </div>
@@ -94,6 +96,13 @@
     <table class="admin-table">
       <thead><tr><th>Du</th><th>Au</th><th>Motif</th><th></th></tr></thead>
       <tbody id="tbody-indispo"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-avis" class="admin-panel">
+    <table class="admin-table">
+      <thead><tr><th>Date</th><th>Type</th><th>Nom</th><th>Note</th><th>Commentaire</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="tbody-avis"></tbody>
     </table>
   </div>
 </div>
