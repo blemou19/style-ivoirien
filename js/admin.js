@@ -1,6 +1,7 @@
 // ===================== CONNEXION =====================
 const loginForm = document.getElementById('admin-login-form');
 const loginErreur = document.getElementById('admin-erreur');
+const BASE_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
 async function verifierSession() {
   const { data } = await supabaseClient.auth.getSession();
@@ -29,6 +30,7 @@ function afficherAdmin() {
   chargerCommandesAdmin();
   chargerRendezVousAdmin();
   chargerIndisponibilitesAdmin();
+  chargerAvisAdmin();
 }
 
 document.getElementById('admin-deconnexion').addEventListener('click', async () => {
@@ -62,6 +64,7 @@ function commencerEdition(id) {
   document.getElementById('p-categorie').value = produit.categorie;
   document.getElementById('p-prix').value = produit.prix;
   document.getElementById('p-tailles').value = produit.tailles || '';
+  document.getElementById('p-stock').value = produit.stock ?? '';
   document.getElementById('p-description').value = produit.description || '';
   document.getElementById('p-image').value = produit.image_url || '';
   document.getElementById('p-video').value = produit.video_url || '';
@@ -141,6 +144,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     image_url: imageUrl,
     video_url: videoUrl,
     tailles: document.getElementById('p-tailles').value.trim(),
+    stock: document.getElementById('p-stock').value === '' ? null : Number(document.getElementById('p-stock').value),
   };
 
   let error;
@@ -165,7 +169,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 async function chargerProduitsAdmin() {
   const { data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false });
   const tbody = document.getElementById('tbody-produits');
-  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="8">Erreur de chargement.</td></tr>'; return; }
 
   produitsCache = data;
 
@@ -176,6 +180,7 @@ async function chargerProduitsAdmin() {
       <td>${p.nom}${p.video_url ? ' 🎥' : ''}</td>
       <td>${p.categorie}</td>
       <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
+      <td>${p.stock !== null && p.stock !== undefined ? p.stock : '∞'}</td>
       <td>
         <select data-id="${p.id}" class="select-actif-produit">
           <option value="true" ${p.actif ? 'selected' : ''}>En vente</option>
@@ -257,7 +262,7 @@ async function chargerCommandesAdmin() {
       const messages = {
         'En attente': `Bonjour ${c.client_nom}, nous avons bien reçu votre commande (${totalFormate}). Nous revenons vers vous rapidement pour la confirmer.`,
         'Confirmée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) est confirmée ! Nous préparons vos articles.`,
-        'Livrée': `Bonjour ${c.client_nom}, votre commande a bien été livrée. Merci pour votre confiance !`,
+        'Livrée': `Bonjour ${c.client_nom}, votre commande a bien été livrée. Merci pour votre confiance ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=commande&ref=${c.reference || ''}&nom=${encodeURIComponent(c.client_nom)}`,
         'Annulée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) a été annulée. N'hésitez pas à repasser commande si besoin.`
       };
       const message = messages[statutActuel] || `Bonjour ${c.client_nom}, `;
@@ -311,7 +316,7 @@ async function chargerRendezVousAdmin() {
       const messages = {
         'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
         'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}. À bientôt !`,
-        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à revenir vers nous pour une prochaine création.`,
+        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)} — et à revenir vers nous pour une prochaine création.`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
       const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
@@ -352,6 +357,43 @@ async function chargerIndisponibilitesAdmin() {
     btn.addEventListener('click', async () => {
       await supabaseClient.from('indisponibilites').delete().eq('id', btn.dataset.id);
       chargerIndisponibilitesAdmin();
+    });
+  });
+}
+
+// ===================== AVIS =====================
+async function chargerAvisAdmin() {
+  const { data, error } = await supabaseClient.from('avis').select('*').order('cree_le', { ascending: false });
+  const tbody = document.getElementById('tbody-avis');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
+
+  tbody.innerHTML = data.map(a => `
+    <tr>
+      <td>${new Date(a.cree_le).toLocaleDateString('fr-FR')}</td>
+      <td>${a.type === 'commande' ? 'Commande' : 'Sur mesure'}${a.reference ? `<br><span style="color:#7a6f64; font-size:11px;">${a.reference}</span>` : ''}</td>
+      <td>${a.client_nom}</td>
+      <td>${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</td>
+      <td style="max-width:220px;">${a.commentaire || '—'}</td>
+      <td>
+        <select data-id="${a.id}" class="select-visible-avis">
+          <option value="true" ${a.visible ? 'selected' : ''}>Visible</option>
+          <option value="false" ${!a.visible ? 'selected' : ''}>Masqué</option>
+        </select>
+      </td>
+      <td><button class="admin-action-btn" data-id="${a.id}" data-action="supprimer-avis">Supprimer</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-visible-avis').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('avis').update({ visible: sel.value === 'true' }).eq('id', sel.dataset.id);
+    });
+  });
+  document.querySelectorAll('[data-action="supprimer-avis"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Supprimer cet avis ?')) return;
+      await supabaseClient.from('avis').delete().eq('id', btn.dataset.id);
+      chargerAvisAdmin();
     });
   });
 }
