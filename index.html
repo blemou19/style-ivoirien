@@ -178,6 +178,22 @@
   </div>
 </section>
 
+<section id="avis">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Ils nous font confiance</p>
+      <h2>Avis clients</h2>
+      <p id="avis-moyenne-affichage"></p>
+    </div>
+    <div id="liste-avis" class="liste-avis">
+      <p style="text-align:center; color:#7a6f64;">Chargement des avis...</p>
+    </div>
+    <div class="voir-plus-wrap">
+      <a href="avis.html" class="btn btn-outline">Laisser un avis</a>
+    </div>
+  </div>
+</section>
+
 <footer id="contact">
   <div class="footer-inner">
     <div>
@@ -234,6 +250,36 @@
     `).join('');
   }
   chargerApercu();
+
+  async function chargerAvis() {
+    const { data, error } = await supabaseClient
+      .from('avis')
+      .select('*')
+      .eq('visible', true)
+      .order('cree_le', { ascending: false })
+      .limit(6);
+
+    const conteneur = document.getElementById('liste-avis');
+    const moyenneEl = document.getElementById('avis-moyenne-affichage');
+
+    if (error || !data || data.length === 0) {
+      conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Pas encore d\'avis publiés.</p>';
+      moyenneEl.textContent = '';
+      return;
+    }
+
+    const moyenne = (data.reduce((s, a) => s + a.note, 0) / data.length).toFixed(1);
+    moyenneEl.textContent = `Note moyenne : ${moyenne} / 5 (${data.length} avis)`;
+
+    conteneur.innerHTML = data.map(a => `
+      <div class="avis-carte">
+        <div class="avis-etoiles-affichage">${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</div>
+        <p class="avis-commentaire">${a.commentaire || ''}</p>
+        <span class="avis-auteur">— ${a.client_nom}</span>
+      </div>
+    `).join('');
+  }
+  chargerAvis();
 </script>
 </body>
 </html>
