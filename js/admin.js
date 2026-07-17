@@ -49,6 +49,10 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
 // ===================== PRODUITS =====================
 let produitsCache = [];
 
+function formatRefProduit(num) {
+  return num ? `P-${String(num).padStart(4, '0')}` : '—';
+}
+
 function commencerEdition(id) {
   const produit = produitsCache.find(p => p.id === id);
   if (!produit) return;
@@ -60,7 +64,9 @@ function commencerEdition(id) {
   document.getElementById('p-tailles').value = produit.tailles || '';
   document.getElementById('p-description').value = produit.description || '';
   document.getElementById('p-image').value = produit.image_url || '';
+  document.getElementById('p-video').value = produit.video_url || '';
   document.getElementById('p-image-actuelle-label').textContent = produit.image_url ? '(une photo existe déjà, choisis-en une seulement si tu veux la remplacer)' : '';
+  document.getElementById('p-video-actuelle-label').textContent = produit.video_url ? '(une vidéo existe déjà, choisis-en une seulement si tu veux la remplacer)' : '';
 
   document.getElementById('p-submit-btn').textContent = 'Enregistrer les modifications';
   document.getElementById('p-annuler-btn').style.display = 'inline-flex';
@@ -72,7 +78,9 @@ function annulerEdition() {
   document.getElementById('form-nouveau-produit').reset();
   document.getElementById('p-edit-id').value = '';
   document.getElementById('p-image').value = '';
+  document.getElementById('p-video').value = '';
   document.getElementById('p-image-actuelle-label').textContent = '';
+  document.getElementById('p-video-actuelle-label').textContent = '';
   document.getElementById('p-submit-btn').textContent = 'Ajouter le produit';
   document.getElementById('p-annuler-btn').style.display = 'none';
 }
@@ -83,22 +91,20 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
   e.preventDefault();
   const boutonSubmit = document.getElementById('p-submit-btn');
   const statutEl = document.getElementById('p-image-statut');
-  const fichier = document.getElementById('p-image-file').files[0];
+  const fichierImage = document.getElementById('p-image-file').files[0];
+  const fichierVideo = document.getElementById('p-video-file').files[0];
   const editId = document.getElementById('p-edit-id').value;
 
   boutonSubmit.disabled = true;
   boutonSubmit.textContent = 'Envoi en cours...';
 
   let imageUrl = document.getElementById('p-image').value || '';
+  let videoUrl = document.getElementById('p-video').value || '';
 
-  if (fichier) {
+  if (fichierImage) {
     statutEl.textContent = 'Envoi de la photo...';
-    const nomFichier = `${Date.now()}-${fichier.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-
-    const { error: erreurUpload } = await supabaseClient.storage
-      .from('produits')
-      .upload(nomFichier, fichier);
-
+    const nomFichier = `${Date.now()}-${fichierImage.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUpload } = await supabaseClient.storage.from('produits').upload(nomFichier, fichierImage);
     if (erreurUpload) {
       alert("Erreur lors de l'envoi de la photo : " + erreurUpload.message);
       boutonSubmit.disabled = false;
@@ -106,9 +112,23 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
       statutEl.textContent = '';
       return;
     }
-
     const { data: urlData } = supabaseClient.storage.from('produits').getPublicUrl(nomFichier);
     imageUrl = urlData.publicUrl;
+  }
+
+  if (fichierVideo) {
+    statutEl.textContent = 'Envoi de la vidéo...';
+    const nomFichierVideo = `${Date.now()}-${fichierVideo.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUploadVideo } = await supabaseClient.storage.from('produits').upload(nomFichierVideo, fichierVideo);
+    if (erreurUploadVideo) {
+      alert("Erreur lors de l'envoi de la vidéo : " + erreurUploadVideo.message);
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
+      statutEl.textContent = '';
+      return;
+    }
+    const { data: urlDataVideo } = supabaseClient.storage.from('produits').getPublicUrl(nomFichierVideo);
+    videoUrl = urlDataVideo.publicUrl;
   }
 
   statutEl.textContent = '';
@@ -119,6 +139,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     prix: Number(document.getElementById('p-prix').value),
     description: document.getElementById('p-description').value.trim(),
     image_url: imageUrl,
+    video_url: videoUrl,
     tailles: document.getElementById('p-tailles').value.trim(),
   };
 
@@ -143,4 +164,196 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 
 async function chargerProduitsAdmin() {
   const { data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false });
-  const tbody =
+  const tbody = document.getElementById('tbody-produits');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
+
+  produitsCache = data;
+
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>${p.image_url ? `<img src="${p.image_url}" alt="">` : '—'}</td>
+      <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
+      <td>${p.nom}${p.video_url ? ' 🎥' : ''}</td>
+      <td>${p.categorie}</td>
+      <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
+      <td>
+        <select data-id="${p.id}" class="select-actif-produit">
+          <option value="true" ${p.actif ? 'selected' : ''}>En vente</option>
+          <option value="false" ${!p.actif ? 'selected' : ''}>Masqué</option>
+        </select>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${p.id}" data-action="modifier-produit">Modifier</button>
+        <button class="admin-action-btn" data-id="${p.id}" data-action="supprimer-produit">Supprimer</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-actif-produit').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('produits').update({ actif: sel.value === 'true' }).eq('id', sel.dataset.id);
+    });
+  });
+  document.querySelectorAll('[data-action="supprimer-produit"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Supprimer ce produit définitivement ?')) return;
+      await supabaseClient.from('produits').delete().eq('id', btn.dataset.id);
+      chargerProduitsAdmin();
+    });
+  });
+  document.querySelectorAll('[data-action="modifier-produit"]').forEach(btn => {
+    btn.addEventListener('click', () => commencerEdition(btn.dataset.id));
+  });
+}
+
+// ===================== COMMANDES =====================
+let commandesCache = [];
+
+async function chargerCommandesAdmin() {
+  const { data, error } = await supabaseClient.from('commandes').select('*').order('cree_le', { ascending: false });
+  const tbody = document.getElementById('tbody-commandes');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  commandesCache = data;
+
+  document.getElementById('stat-total-commandes').textContent = data.length;
+  const confirmees = data.filter(c => c.statut === 'Confirmée' || c.statut === 'Livrée');
+  const chiffreAffaires = confirmees.reduce((s, c) => s + Number(c.total), 0);
+  document.getElementById('stat-ca').textContent = chiffreAffaires.toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('stat-en-attente').textContent = data.filter(c => c.statut === 'En attente').length;
+
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${c.reference || '—'}<br><span style="color:#7a6f64; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
+      <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
+      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}</span></td>
+      <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
+      <td>
+        <select data-id="${c.id}" class="select-statut-commande">
+          <option ${c.statut==='En attente'?'selected':''}>En attente</option>
+          <option ${c.statut==='Confirmée'?'selected':''}>Confirmée</option>
+          <option ${c.statut==='Livrée'?'selected':''}>Livrée</option>
+          <option ${c.statut==='Annulée'?'selected':''}>Annulée</option>
+        </select>
+      </td>
+      <td><button class="admin-action-btn" data-id="${c.id}" data-action="contacter-commande">Contacter</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-statut-commande').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('commandes').update({ statut: sel.value }).eq('id', sel.dataset.id);
+      chargerCommandesAdmin();
+    });
+  });
+
+  document.querySelectorAll('[data-action="contacter-commande"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = commandesCache.find(x => x.id === btn.dataset.id);
+      if (!c) return;
+      const statutActuel = document.querySelector(`.select-statut-commande[data-id="${c.id}"]`).value;
+      const totalFormate = Number(c.total).toLocaleString('fr-FR') + ' GNF';
+
+      const messages = {
+        'En attente': `Bonjour ${c.client_nom}, nous avons bien reçu votre commande (${totalFormate}). Nous revenons vers vous rapidement pour la confirmer.`,
+        'Confirmée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) est confirmée ! Nous préparons vos articles.`,
+        'Livrée': `Bonjour ${c.client_nom}, votre commande a bien été livrée. Merci pour votre confiance !`,
+        'Annulée': `Bonjour ${c.client_nom}, votre commande (${totalFormate}) a été annulée. N'hésitez pas à repasser commande si besoin.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${c.client_nom}, `;
+      const numero = c.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+}
+
+// ===================== RENDEZ-VOUS =====================
+let rdvCache = [];
+
+async function chargerRendezVousAdmin() {
+  const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true });
+  const tbody = document.getElementById('tbody-rdv');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+
+  rdvCache = data;
+
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
+      <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
+      <td>${r.type_vetement}</td>
+      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.zone_livraison || ''}</span></td>
+      <td>
+        <select data-id="${r.id}" class="select-statut-rdv">
+          <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
+          <option ${r.statut==='Confirmé'?'selected':''}>Confirmé</option>
+          <option ${r.statut==='Terminé'?'selected':''}>Terminé</option>
+          <option ${r.statut==='Annulé'?'selected':''}>Annulé</option>
+        </select>
+      </td>
+      <td><button class="admin-action-btn" data-id="${r.id}" data-action="contacter-rdv">Contacter</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.select-statut-rdv').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      await supabaseClient.from('rendez_vous').update({ statut: sel.value }).eq('id', sel.dataset.id);
+    });
+  });
+
+  document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rdvCache.find(x => x.id === btn.dataset.id);
+      if (!r) return;
+      const statutActuel = document.querySelector(`.select-statut-rdv[data-id="${r.id}"]`).value;
+      const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      const messages = {
+        'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}. À bientôt !`,
+        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à revenir vers nous pour une prochaine création.`,
+        'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
+      };
+      const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
+      const numero = r.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+}
+
+// ===================== INDISPONIBILITES =====================
+document.getElementById('form-indispo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await supabaseClient.from('indisponibilites').insert({
+    date_debut: document.getElementById('indispo-debut').value,
+    date_fin: document.getElementById('indispo-fin').value,
+    motif: document.getElementById('indispo-motif').value.trim()
+  });
+  if (error) { alert("Erreur : " + error.message); return; }
+  e.target.reset();
+  chargerIndisponibilitesAdmin();
+});
+
+async function chargerIndisponibilitesAdmin() {
+  const { data, error } = await supabaseClient.from('indisponibilites').select('*').order('date_debut', { ascending: true });
+  const tbody = document.getElementById('tbody-indispo');
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="4">Erreur de chargement.</td></tr>'; return; }
+
+  tbody.innerHTML = data.map(i => `
+    <tr>
+      <td>${new Date(i.date_debut).toLocaleDateString('fr-FR')}</td>
+      <td>${new Date(i.date_fin).toLocaleDateString('fr-FR')}</td>
+      <td>${i.motif || '—'}</td>
+      <td><button class="admin-action-btn" data-id="${i.id}" data-action="supprimer-indispo">Supprimer</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('[data-action="supprimer-indispo"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await supabaseClient.from('indisponibilites').delete().eq('id', btn.dataset.id);
+      chargerIndisponibilitesAdmin();
+    });
+  });
+}
+
+verifierSession();
