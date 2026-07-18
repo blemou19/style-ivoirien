@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prendre rendez-vous — Style Ivoirien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">
+        <img src="img/logo.png" alt="Style Ivoirien">
+      </span>
+      <span class="logo-text">
+        <span class="line1">Style Ivoirien</span>
+        <span class="line2">COUTURE &amp; BOUTIQUE</span>
+      </span>
+    </a>
+    <nav id="mainNav">
+      <a href="boutique.html">Boutique</a>
+      <a href="catalogue.html">Catalogue</a>
+      <a href="rendez-vous.html">Sur mesure</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="cart-btn" aria-label="Panier">
+        Panier <span class="cart-count">0</span>
+      </button>
+      <button class="burger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="page-header-lite">
+  <p class="eyebrow">Prestation</p>
+  <h1>Une création sur mesure</h1>
+  <p>Choisissez une date, décrivez votre projet, et recevez une réponse rapide sur WhatsApp.</p>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="calendrier">
+      <div class="calendrier-header">
+        <button type="button" id="mois-prec" aria-label="Mois précédent">&larr;</button>
+        <span id="mois-label"></span>
+        <button type="button" id="mois-suiv" aria-label="Mois suivant">&rarr;</button>
+      </div>
+      <div class="calendrier-jours-semaine">
+        <span>Lu</span><span>Ma</span><span>Me</span><span>Je</span><span>Ve</span><span>Sa</span><span>Di</span>
+      </div>
+      <div id="calendrier-grille" class="calendrier-grille"></div>
+    </div>
+    <p id="date-choisie-affichage" class="date-choisie-affichage">Choisissez une date dans le calendrier ci-dessus.</p>
+
+    <form id="form-sur-mesure" class="form-sur-mesure">
+      <div id="modeles-choisis-box" class="modeles-choisis-box" style="display:none;">
+        <p class="sm-label" style="margin:0 0 8px;">Modèle(s) choisis dans le catalogue :</p>
+        <div id="modeles-choisis-liste"></div>
+      </div>
+
+      <div id="prompt-modele" class="sm-mesures-toggle">
+        <p class="sm-label">Avez-vous déjà une idée précise du modèle souhaité ?</p>
+        <div class="sm-mode">
+          <label><input type="radio" name="a-modele" value="non" checked> Non, je vais décrire mon projet</label>
+          <label><input type="radio" name="a-modele" value="oui"> Oui, je veux choisir dans le catalogue</label>
+        </div>
+        <a href="catalogue.html" id="lien-catalogue" class="btn btn-outline" style="display:none; margin-top:8px;">Parcourir le catalogue</a>
+      </div>
+
+      <input type="text" id="sm-nom" placeholder="Votre nom" required>
+      <div style="display:flex; gap:8px;">
+        <select id="sm-indicatif" style="flex:0 0 130px;">
+          <option value="224">🇬🇳 Guinée +224</option>
+          <option value="225">🇨🇮 Côte d'Ivoire +225</option>
+          <option value="223">🇲🇱 Mali +223</option>
+          <option value="221">🇸🇳 Sénégal +221</option>
+          <option value="229">🇧🇯 Bénin +229</option>
+          <option value="228">🇹🇬 Togo +228</option>
+          <option value="226">🇧🇫 Burkina Faso +226</option>
+          <option value="33">🇫🇷 France +33</option>
+          <option value="autre">🌍 Autre pays</option>
+        </select>
+        <input type="tel" id="sm-telephone" placeholder="Numéro (ex: 622334455)" required style="flex:1;">
+      </div>
+      <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
+      <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité / description de votre projet" required>
+
+      <div class="sm-mesures-toggle">
+        <p class="sm-label">Connaissez-vous vos mesures ?</p>
+        <div class="sm-mode">
+          <label><input type="radio" name="sait-mesures" value="non" checked> Non, à prendre sur place</label>
+          <label><input type="radio" name="sait-mesures" value="oui"> Oui, je les connais</label>
+        </div>
+      </div>
+
+      <div id="bloc-mesures" class="mesures-grid" style="display:none;">
+        <label class="mesure-champ">Tour de poitrine
+          <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de taille
+          <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de hanches
+          <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Longueur souhaitée
+          <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Tour de bras
+          <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
+        </label>
+        <label class="mesure-champ">Épaules
+          <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
+        </label>
+      </div>
+
+      <div class="sm-mode">
+        <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
+        <label><input type="radio" name="mode" value="En ligne (WhatsApp, téléphone...)"> En ligne</label>
+      </div>
+
+      <label class="sm-label" for="sm-heure">Heure souhaitée</label>
+      <input type="time" id="sm-heure" required value="14:00" step="900">
+      <p id="heures-prises-affichage" style="font-size:12px; color:#7a6f64; margin-top:-6px;"></p>
+
+      <textarea id="sm-notes" placeholder="Notes complémentaires (optionnel)" rows="2"></textarea>
+      <button type="submit" class="btn btn-primary">Envoyer la demande via WhatsApp</button>
+    </form>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="footer-inner">
+    <div>
+      <h4>Style Ivoirien</h4>
+      <p>Couture, prêt-à-porter africain et créations sur mesure.</p>
+      <p>Conakry, Guinée</p>
+    </div>
+    <div class="footer-links">
+      <h4>Navigation</h4>
+      <a href="boutique.html">Boutique</a>
+      <a href="catalogue.html">Catalogue</a>
+      <a href="rendez-vous.html">Sur mesure</a>
+    </div>
+    <div class="footer-links">
+      <h4>Contact</h4>
+      <a href="https://wa.me/224626321860" target="_blank">WhatsApp : +224 62 63 21 860</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Style Ivoirien — tous droits réservés</span>
+    <a href="admin.html" class="admin-link">Espace pro</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/main.js"></script>
+<script src="js/sur-mesure.js"></script>
+</body>
+</html>
