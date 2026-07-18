@@ -1,22 +1,54 @@
-const paramsUrl = new URLSearchParams(window.location.search);
-let modeleChoisi = null;
-const modeleParam = paramsUrl.get('modele');
-if (modeleParam) {
-  try {
-    modeleChoisi = JSON.parse(decodeURIComponent(modeleParam));
-    document.getElementById('sm-vetement').value = modeleChoisi.nom;
-    document.getElementById('modele-choisi-box').style.display = 'flex';
-    document.getElementById('modele-choisi-nom').textContent = modeleChoisi.nom;
-    if (modeleChoisi.image_url) document.getElementById('modele-choisi-img').src = modeleChoisi.image_url;
-  } catch (e) {
-    modeleChoisi = null;
+const MODELES_KEY = 'style_ivoirien_modeles_choisis';
+
+function getModelesChoisis() {
+  try { return JSON.parse(localStorage.getItem(MODELES_KEY)) || []; } catch (e) { return []; }
+}
+
+function retirerModeleChoisi(id) {
+  const liste = getModelesChoisis().filter(m => m.id !== id);
+  localStorage.setItem(MODELES_KEY, JSON.stringify(liste));
+  afficherModelesChoisis();
+}
+
+function afficherModelesChoisis() {
+  const liste = getModelesChoisis();
+  const box = document.getElementById('modeles-choisis-box');
+  const conteneur = document.getElementById('modeles-choisis-liste');
+  const prompt = document.getElementById('prompt-modele');
+
+  if (liste.length === 0) {
+    box.style.display = 'none';
+    prompt.style.display = 'block';
+    return;
+  }
+
+  prompt.style.display = 'none';
+  box.style.display = 'block';
+  conteneur.innerHTML = liste.map(m => `
+    <div class="modele-choisi-box">
+      ${m.image_url ? `<img src="${m.image_url}" alt="${m.nom}">` : ''}
+      <div><p style="margin:0; font-family:var(--font-display); font-size:15px;">${m.nom}</p></div>
+      <button type="button" class="admin-action-btn" data-retirer="${m.id}">Retirer</button>
+    </div>
+  `).join('');
+
+  conteneur.querySelectorAll('[data-retirer]').forEach(btn => {
+    btn.addEventListener('click', () => retirerModeleChoisi(btn.dataset.retirer));
+  });
+
+  const champVetement = document.getElementById('sm-vetement');
+  if (!champVetement.value.trim()) {
+    champVetement.value = liste.map(m => m.nom).join(', ');
   }
 }
-document.getElementById('modele-choisi-retirer')?.addEventListener('click', () => {
-  modeleChoisi = null;
-  document.getElementById('modele-choisi-box').style.display = 'none';
-  document.getElementById('sm-vetement').value = '';
+
+document.querySelectorAll('input[name="a-modele"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('lien-catalogue').style.display = (r.value === 'oui' && r.checked) ? 'inline-flex' : 'none';
+  });
 });
+
+afficherModelesChoisis();
 
 let indispoRanges = [];
 let moisAffiche = new Date();
@@ -164,6 +196,9 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const heure = document.getElementById('sm-heure').value;
   const notes = document.getElementById('sm-notes').value.trim();
+  const modeles = getModelesChoisis();
+  const modeleRef = modeles.length > 0 ? modeles.map(m => m.nom).join(' / ') : null;
+  const modeleImage = modeles.length > 0 ? modeles[0].image_url : null;
 
   if (!nom || !telephone || !vetement) {
     alert('Merci de remplir au moins votre nom, téléphone et le type de vêtement souhaité.');
@@ -180,8 +215,8 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     heure_souhaitee: heure,
     notes: notes,
     statut: 'Nouvelle demande',
-    modele_ref: modeleChoisi ? modeleChoisi.nom : null,
-    modele_image: modeleChoisi ? modeleChoisi.image_url : null
+    modele_ref: modeleRef,
+    modele_image: modeleImage
   });
 
   if (error) {
@@ -195,7 +230,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
   const message = `Bonjour, je souhaite une création sur mesure :\n` +
     `Vêtement : ${vetement}\n` +
-    (modeleChoisi ? `Modèle inspiré du catalogue : ${modeleChoisi.nom}${modeleChoisi.image_url ? ' (' + modeleChoisi.image_url + ')' : ''}\n` : '') +
+    (modeleRef ? `Modèle(s) inspiré(s) du catalogue : ${modeleRef}\n` : '') +
     `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
@@ -205,10 +240,10 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
   window.open(lienWhatsApp, '_blank');
 
+  localStorage.removeItem(MODELES_KEY);
   document.getElementById('form-sur-mesure').reset();
   document.getElementById('bloc-mesures').style.display = 'none';
-  document.getElementById('modele-choisi-box').style.display = 'none';
-  modeleChoisi = null;
+  afficherModelesChoisis();
   dateChoisie = null;
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
