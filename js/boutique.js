@@ -5,6 +5,7 @@ let offset = 0;
 let produitsCharges = [];
 let modalQty = 1;
 let modalTailleChoisie = '';
+let modalStockMax = null;
 let timeoutRecherche = null;
 
 async function chargerCategories() {
@@ -57,20 +58,22 @@ function formatRefProduit(num) {
 }
 
 function carteProduitHtml(p) {
+  const epuise = p.stock !== null && p.stock !== undefined && p.stock <= 0;
   const produitData = encodeURIComponent(JSON.stringify({
-    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
+    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', stock: p.stock ?? null
   }));
   return `
     <div class="produit-card" data-id="${p.id}">
       <div class="produit-image">
         ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
         ${p.video_url ? '<span class="badge-video">🎥 Vidéo</span>' : ''}
+        ${epuise ? '<span class="badge-epuise">Épuisé</span>' : ''}
       </div>
       <div class="produit-info">
         <span class="produit-categorie">${p.categorie}</span>
         <h3 class="produit-nom">${p.nom}</h3>
         <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-        <button class="btn-ajouter" data-produit="${produitData}" data-id="${p.id}">Ajouter au panier</button>
+        <button class="btn-ajouter" data-produit="${produitData}" data-id="${p.id}" ${epuise ? 'disabled' : ''}>${epuise ? 'Épuisé' : 'Ajouter au panier'}</button>
       </div>
     </div>
   `;
@@ -122,6 +125,7 @@ function ouvrirDetailProduit(id) {
 
   modalQty = 1;
   modalTailleChoisie = '';
+  modalStockMax = (p.stock === null || p.stock === undefined) ? null : p.stock;
   document.getElementById('modal-qty-valeur').textContent = '1';
 
   const media = document.getElementById('modal-media');
@@ -139,6 +143,18 @@ function ouvrirDetailProduit(id) {
   document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
   document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
 
+  const stockEl = document.getElementById('modal-stock');
+  if (modalStockMax !== null) {
+    stockEl.textContent = modalStockMax > 0 ? `${modalStockMax} en stock` : 'Épuisé';
+  } else {
+    stockEl.textContent = '';
+  }
+
+  const boutonAjouterModal = document.getElementById('modal-ajouter');
+  const epuise = modalStockMax !== null && modalStockMax <= 0;
+  boutonAjouterModal.disabled = epuise;
+  boutonAjouterModal.textContent = epuise ? 'Épuisé' : 'Ajouter au panier';
+
   const taillesEl = document.getElementById('modal-tailles');
   if (p.tailles) {
     const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
@@ -152,7 +168,7 @@ function ouvrirDetailProduit(id) {
   }
 
   document.getElementById('modal-ajouter').dataset.produit = encodeURIComponent(JSON.stringify({
-    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || ''
+    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', stock: p.stock ?? null
   }));
 
   document.getElementById('produit-modal-overlay').classList.add('ouvert');
@@ -181,11 +197,16 @@ document.getElementById('modal-qty-moins').addEventListener('click', () => {
   document.getElementById('modal-qty-valeur').textContent = modalQty;
 });
 document.getElementById('modal-qty-plus').addEventListener('click', () => {
+  if (modalStockMax !== null && modalQty >= modalStockMax) {
+    alert(`Seulement ${modalStockMax} en stock.`);
+    return;
+  }
   modalQty++;
   document.getElementById('modal-qty-valeur').textContent = modalQty;
 });
 
 document.getElementById('modal-ajouter').addEventListener('click', (e) => {
+  if (e.target.disabled) return;
   const produit = JSON.parse(decodeURIComponent(e.target.dataset.produit));
   produit.taille = modalTailleChoisie || '';
   for (let i = 0; i < modalQty; i++) {
@@ -197,8 +218,10 @@ document.getElementById('modal-ajouter').addEventListener('click', (e) => {
 document.getElementById('grille-produits').addEventListener('click', (e) => {
   const boutonAjouter = e.target.closest('.btn-ajouter');
   if (boutonAjouter) {
+    if (boutonAjouter.disabled) { e.stopPropagation(); return; }
     const p = produitsCharges.find(x => x.id === boutonAjouter.dataset.id);
     if (p && p.tailles) {
+      e.stopPropagation();
       ouvrirDetailProduit(p.id);
     }
     return;
