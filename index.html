@@ -26,7 +26,7 @@
     <nav id="mainNav">
       <a href="boutique.html">Boutique</a>
       <a href="catalogue.html">Catalogue</a>
-      <a href="#sur-mesure">Sur mesure</a>
+      <a href="rendez-vous.html">Sur mesure</a>
       <a href="#contact">Contact</a>
     </nav>
 
@@ -50,7 +50,7 @@
     <div>
       <p class="eyebrow">Conakry, Guinée</p>
       <h1>La couture africaine,<br>faite <em>sur mesure</em>.</h1>
-    <p class="lead">
+      <p class="lead">
         Style Ivoirien sélectionne et vend des vêtements et accessoires
         authentiques rapportés du Mali, du Sénégal, de la Côte d'Ivoire et
         d'ailleurs en Afrique de l'Ouest. Achetez directement une pièce dans
@@ -61,7 +61,7 @@
       <div class="hero-ctas">
         <a href="boutique.html" class="btn btn-primary">Voir la boutique</a>
         <a href="catalogue.html" class="btn btn-outline">Parcourir le catalogue</a>
-        <a href="#sur-mesure" class="btn btn-outline">Demander une création</a>
+        <a href="rendez-vous.html" class="btn btn-outline">Demander une création</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -95,102 +95,21 @@
     <div class="voir-plus-wrap">
       <a href="boutique.html" class="btn btn-primary">Voir toute la boutique</a>
     </div>
-  </div>
-</section>
 
-<section id="sur-mesure">
-  <div class="wrap">
-    <div class="section-head">
-      <p class="eyebrow">Prestation</p>
-      <h2>Une création sur mesure</h2>
-      <p>Choisissez une date, décrivez votre projet, et recevez une réponse rapide sur WhatsApp.</p>
-    </div>
-
-    <div class="calendrier">
-      <div class="calendrier-header">
-        <button type="button" id="mois-prec" aria-label="Mois précédent">&larr;</button>
-        <span id="mois-label"></span>
-        <button type="button" id="mois-suiv" aria-label="Mois suivant">&rarr;</button>
-      </div>
-      <div class="calendrier-jours-semaine">
-        <span>Lu</span><span>Ma</span><span>Me</span><span>Je</span><span>Ve</span><span>Sa</span><span>Di</span>
-      </div>
-      <div id="calendrier-grille" class="calendrier-grille"></div>
-    </div>
-    <p id="date-choisie-affichage" class="date-choisie-affichage">Choisissez une date dans le calendrier ci-dessus.</p>
-
-    <form id="form-sur-mesure" class="form-sur-mesure">
-      <div id="modele-choisi-box" class="modele-choisi-box" style="display:none;">
-        <img id="modele-choisi-img" src="" alt="">
-        <div>
-          <p class="sm-label" style="margin:0;">Modèle choisi dans le catalogue :</p>
-          <p id="modele-choisi-nom" style="margin:2px 0 0; font-family:var(--font-display); font-size:16px;"></p>
-        </div>
-        <button type="button" id="modele-choisi-retirer" class="admin-action-btn">Retirer</button>
-      </div>
-      <p style="font-size:13px; color:#7a6f64; margin:0 0 4px;">
-        Pas encore d'idée précise ? <a href="catalogue.html" style="color:var(--terracotta-dark);">Parcourez notre catalogue d'inspiration</a>.
-      </p>
-
-      <input type="text" id="sm-nom" placeholder="Votre nom" required>
-      <div style="display:flex; gap:8px;">
-        <select id="sm-indicatif" style="flex:0 0 130px;">
-          <option value="224">🇬🇳 Guinée +224</option>
-          <option value="225">🇨🇮 Côte d'Ivoire +225</option>
-          <option value="223">🇲🇱 Mali +223</option>
-          <option value="221">🇸🇳 Sénégal +221</option>
-          <option value="229">🇧🇯 Bénin +229</option>
-          <option value="228">🇹🇬 Togo +228</option>
-          <option value="226">🇧🇫 Burkina Faso +226</option>
-          <option value="33">🇫🇷 France +33</option>
-          <option value="autre">🌍 Autre pays</option>
-        </select>
-        <input type="tel" id="sm-telephone" placeholder="Numéro (ex: 622334455)" required style="flex:1;">
-      </div>
-      <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
-      <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité (ex: robe de soirée)" required>
-
-      <div class="sm-mesures-toggle">
-        <p class="sm-label">Connaissez-vous vos mesures ?</p>
-        <div class="sm-mode">
-          <label><input type="radio" name="sait-mesures" value="non" checked> Non, à prendre sur place</label>
-          <label><input type="radio" name="sait-mesures" value="oui"> Oui, je les connais</label>
+    <div id="produit-modal-overlay" class="produit-modal-overlay">
+      <div class="produit-modal">
+        <button id="produit-modal-fermer" class="produit-modal-fermer" aria-label="Fermer">&times;</button>
+        <div class="produit-modal-image" id="modal-media"></div>
+        <div class="produit-modal-info">
+          <span id="modal-categorie" class="produit-categorie"></span>
+          <h2 id="modal-nom"></h2>
+          <span id="modal-prix" class="produit-modal-prix"></span>
+          <p id="modal-desc" class="produit-modal-desc"></p>
+          <button id="modal-ajouter" class="btn btn-primary">Ajouter au panier</button>
+          <a href="boutique.html" style="display:block; text-align:center; font-size:12px; color:var(--terracotta-dark); margin-top:8px;">Voir plus de détails dans la boutique</a>
         </div>
       </div>
-
-      <div id="bloc-mesures" class="mesures-grid" style="display:none;">
-        <label class="mesure-champ">Tour de poitrine
-          <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
-        </label>
-        <label class="mesure-champ">Tour de taille
-          <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
-        </label>
-        <label class="mesure-champ">Tour de hanches
-          <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
-        </label>
-        <label class="mesure-champ">Longueur souhaitée
-          <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
-        </label>
-        <label class="mesure-champ">Tour de bras
-          <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
-        </label>
-        <label class="mesure-champ">Épaules
-          <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
-        </label>
-      </div>
-
-      <div class="sm-mode">
-        <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
-        <label><input type="radio" name="mode" value="En ligne (WhatsApp, téléphone...)"> En ligne</label>
-      </div>
-
-      <label class="sm-label" for="sm-heure">Heure souhaitée</label>
-      <input type="time" id="sm-heure" required value="14:00" step="900">
-      <p id="heures-prises-affichage" style="font-size:12px; color:#7a6f64; margin-top:-6px;"></p>
-
-      <textarea id="sm-notes" placeholder="Notes complémentaires (optionnel)" rows="2"></textarea>
-      <button type="submit" class="btn btn-primary">Envoyer la demande via WhatsApp</button>
-    </form>
+    </div>
   </div>
 </section>
 
@@ -221,7 +140,7 @@
       <h4>Navigation</h4>
       <a href="boutique.html">Boutique</a>
       <a href="catalogue.html">Catalogue</a>
-      <a href="#sur-mesure">Sur mesure</a>
+      <a href="rendez-vous.html">Sur mesure</a>
     </div>
     <div class="footer-links">
       <h4>Contact</h4>
@@ -236,8 +155,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/main.js"></script>
-<script src="js/sur-mesure.js"></script>
 <script>
+  let produitsApercu = [];
+
   async function chargerApercu() {
     const conteneur = document.getElementById('grille-apercu');
     const { data, error } = await supabaseClient
@@ -252,8 +172,10 @@
       return;
     }
 
+    produitsApercu = data;
+
     conteneur.innerHTML = data.map(p => `
-      <div class="produit-card">
+      <div class="produit-card" data-id="${p.id}">
         <div class="produit-image">
           ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
         </div>
@@ -261,12 +183,49 @@
           <span class="produit-categorie">${p.categorie}</span>
           <h3 class="produit-nom">${p.nom}</h3>
           <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-          <button class="btn-ajouter" data-produit="${encodeURIComponent(JSON.stringify({id:p.id, nom:p.nom, prix:p.prix, image_url:p.image_url||''}))}">Ajouter au panier</button>
+          <button class="btn-ajouter" data-id="${p.id}">Ajouter au panier</button>
         </div>
       </div>
     `).join('');
   }
   chargerApercu();
+
+  function ouvrirDetailApercu(id) {
+    const p = produitsApercu.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modal-media').innerHTML = p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : '';
+    document.getElementById('modal-categorie').textContent = p.categorie;
+    document.getElementById('modal-nom').textContent = p.nom;
+    document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
+    document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
+    document.getElementById('modal-ajouter').onclick = () => {
+      ajouterAuPanier({ id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '' });
+      fermerDetailApercu();
+    };
+    document.getElementById('produit-modal-overlay').classList.add('ouvert');
+  }
+
+  function fermerDetailApercu() {
+    document.getElementById('modal-media').innerHTML = '';
+    document.getElementById('produit-modal-overlay').classList.remove('ouvert');
+  }
+
+  document.getElementById('produit-modal-fermer').addEventListener('click', fermerDetailApercu);
+  document.getElementById('produit-modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'produit-modal-overlay') fermerDetailApercu();
+  });
+
+  document.getElementById('grille-apercu').addEventListener('click', (e) => {
+    const boutonAjouter = e.target.closest('.btn-ajouter');
+    if (boutonAjouter) {
+      e.stopPropagation();
+      const p = produitsApercu.find(x => x.id === boutonAjouter.dataset.id);
+      if (p) ajouterAuPanier({ id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '' });
+      return;
+    }
+    const card = e.target.closest('.produit-card');
+    if (card) ouvrirDetailApercu(card.dataset.id);
+  });
 
   async function chargerAvis() {
     const { data, error } = await supabaseClient
