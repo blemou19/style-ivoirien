@@ -218,12 +218,10 @@ document.getElementById('modal-ajouter').addEventListener('click', (e) => {
 document.getElementById('grille-produits').addEventListener('click', (e) => {
   const boutonAjouter = e.target.closest('.btn-ajouter');
   if (boutonAjouter) {
-    if (boutonAjouter.disabled) { e.stopPropagation(); return; }
+    e.stopPropagation();
+    if (boutonAjouter.disabled) return;
     const p = produitsCharges.find(x => x.id === boutonAjouter.dataset.id);
-    if (p && p.tailles) {
-      e.stopPropagation();
-      ouvrirDetailProduit(p.id);
-    }
+    if (p) ouvrirDetailProduit(p.id);
     return;
   }
   const card = e.target.closest('.produit-card');
