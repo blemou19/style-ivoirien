@@ -228,9 +228,13 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const dateLisible = new Date(dateChoisie + 'T00:00:00')
     .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
+  const lignesModeles = modeles.length > 0
+    ? modeles.map(m => `- ${m.nom}${m.image_url ? ` : ${m.image_url}` : ''}`).join('\n')
+    : '';
+
   const message = `Bonjour, je souhaite une création sur mesure :\n` +
     `Vêtement : ${vetement}\n` +
-    (modeleRef ? `Modèle(s) inspiré(s) du catalogue : ${modeleRef}\n` : '') +
+    (modeles.length > 0 ? `Modèle(s) inspiré(s) du catalogue :\n${lignesModeles}\n` : '') +
     `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
