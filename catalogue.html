@@ -24,7 +24,7 @@
     <nav id="mainNav">
       <a href="boutique.html">Boutique</a>
       <a href="catalogue.html">Catalogue</a>
-      <a href="index.html#sur-mesure">Sur mesure</a>
+      <a href="rendez-vous.html">Sur mesure</a>
       <a href="index.html#contact">Contact</a>
     </nav>
     <div class="nav-actions">
@@ -40,12 +40,12 @@
 
 <div class="page-header-lite">
   <p class="eyebrow">Catalogue d'inspiration</p>
-  <h1>Choisissez votre modèle</h1>
-  <p>Parcourez nos modèles et sélectionnez celui qui vous inspire pour une création sur mesure.</p>
+  <h1>Choisissez vos modèles</h1>
+  <p>Parcourez nos modèles, sélectionnez-en un ou plusieurs, puis lancez votre demande de rendez-vous.</p>
 </div>
 
 <section>
-  <div class="wrap">
+  <div class="wrap" style="padding-bottom:80px;">
     <input type="search" id="recherche-modeles" class="recherche-produits" placeholder="Rechercher un modèle...">
     <div id="filtres-categories" class="filtres-categories"></div>
     <div id="grille-modeles" class="produits-grid">
@@ -63,12 +63,17 @@
           <span id="modal-categorie" class="produit-categorie"></span>
           <h2 id="modal-nom"></h2>
           <p id="modal-desc" class="produit-modal-desc"></p>
-          <button id="modal-choisir" class="btn btn-primary">Choisir ce modèle pour mon rendez-vous</button>
+          <button id="modal-choisir" class="btn btn-primary">Ajouter à ma sélection</button>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<div id="barre-selection" class="barre-selection" style="display:none;">
+  <span id="barre-selection-texte">0 modèle(s) sélectionné(s)</span>
+  <button id="barre-selection-continuer" class="btn btn-primary">Continuer vers la prise de rendez-vous</button>
+</div>
 
 <footer id="contact">
   <div class="footer-inner">
@@ -81,7 +86,7 @@
       <h4>Navigation</h4>
       <a href="boutique.html">Boutique</a>
       <a href="catalogue.html">Catalogue</a>
-      <a href="index.html#sur-mesure">Sur mesure</a>
+      <a href="rendez-vous.html">Sur mesure</a>
     </div>
     <div class="footer-links">
       <h4>Contact</h4>
