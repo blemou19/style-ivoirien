@@ -12,7 +12,8 @@
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></head>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 <body>
 <header>
   <div class="header-inner">
@@ -42,6 +43,7 @@
   </div>
 </footer>
 <script>
+  const TAUX_EUR = 10100; // GNF pour 1 euro — garder synchronisé avec js/main.js
   const params = new URLSearchParams(window.location.search);
   const brut = params.get('d');
   const conteneur = document.getElementById('commande-contenu');
@@ -52,6 +54,7 @@
       const commande = JSON.parse(brut);
       const dateFormatee = new Date(commande.date).toLocaleString('fr-FR');
       document.getElementById('commande-titre').textContent = commande.reference ? `Commande ${commande.reference}` : 'Commande';
+
       const lignesArticles = commande.articles.map(item => `
         <div class="panier-item">
           <div class="panier-item-image">
@@ -63,6 +66,29 @@
           </div>
         </div>
       `).join('');
+
+      const estFrance = !!commande.estFrance;
+      const commission = commande.commission || 0;
+      const totalFinal = commande.totalFinal || (Number(commande.total) + commission);
+
+      const recapHtml = `
+        <div class="panier-recap" style="margin-top:20px;">
+          <div class="panier-recap-ligne">
+            <span>Prix du panier</span>
+            <span>${Number(commande.total).toLocaleString('fr-FR')} GNF${estFrance ? ` (≈ ${(commande.total / TAUX_EUR).toFixed(2)} €)` : ''}</span>
+          </div>
+          <div class="panier-recap-ligne">
+            <span>Commission service</span>
+            <span>${estFrance ? (commission / TAUX_EUR).toFixed(2) + ' €' : commission.toLocaleString('fr-FR') + ' GNF'}</span>
+          </div>
+          <div class="panier-recap-ligne panier-recap-total">
+            <span>Total à payer</span>
+            <span>${totalFinal.toLocaleString('fr-FR')} GNF${estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : ''}</span>
+          </div>
+          ${estFrance ? '<p class="panier-recap-note">⚠️ Ce montant ne couvre pas la livraison — les frais d\'expédition seront communiqués séparément une fois le colis prêt et pesé.</p>' : ''}
+        </div>
+      `;
+
       conteneur.innerHTML = `
         <p style="color:#7a6f64; margin-bottom:20px;">Reçue le ${dateFormatee}</p>
         <div style="border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:20px;">
@@ -71,10 +97,7 @@
           <p><strong>Zone :</strong> ${commande.zone || '—'}</p>
         </div>
         ${lignesArticles}
-        <div class="panier-total" style="margin-top:20px;">
-          <span>Total</span>
-          <span>${Number(commande.total).toLocaleString('fr-FR')} GNF</span>
-        </div>
+        ${recapHtml}
       `;
     } catch (e) {
       conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Impossible d\'afficher cette commande.</p>';
