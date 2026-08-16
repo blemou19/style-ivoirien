@@ -12,7 +12,8 @@
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></head>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 <body>
 
 <header>
@@ -56,6 +57,10 @@
       </div>
 
       <textarea id="avis-commentaire" placeholder="Votre commentaire (optionnel)" rows="4"></textarea>
+      <label style="font-size:13px; color:#7a6f64;">
+        Photo ou vidéo du produit reçu (optionnel)
+        <input type="file" id="avis-media" accept="image/*,video/*" style="margin-top:6px; display:block;">
+      </label>
 
       <button type="submit" class="btn btn-primary">Envoyer mon avis</button>
       <p id="avis-message" style="font-size:13px; text-align:center; color:#7a6f64;"></p>
