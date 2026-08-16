@@ -218,7 +218,7 @@ let commandesCache = [];
 async function chargerCommandesAdmin() {
   const { data, error } = await supabaseClient.from('commandes').select('*').order('cree_le', { ascending: false });
   const tbody = document.getElementById('tbody-commandes');
-  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
 
   commandesCache = data;
 
@@ -228,12 +228,16 @@ async function chargerCommandesAdmin() {
   document.getElementById('stat-ca').textContent = chiffreAffaires.toLocaleString('fr-FR') + ' GNF';
   document.getElementById('stat-en-attente').textContent = data.filter(c => c.statut === 'En attente').length;
 
+  const commissionTotale = confirmees.reduce((s, c) => s + Number(c.commission_gnf || 0), 0);
+  document.getElementById('stat-commission').textContent = commissionTotale.toLocaleString('fr-FR') + ' GNF';
+
   tbody.innerHTML = data.map(c => `
     <tr>
       <td>${c.reference || '—'}<br><span style="color:#7a6f64; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
       <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
       <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
+      <td>${c.commission_gnf ? Number(c.commission_gnf).toLocaleString('fr-FR') + ' GNF' : '—'}</td>
       <td>
         <select data-id="${c.id}" class="select-statut-commande">
           <option ${c.statut==='En attente'?'selected':''}>En attente</option>
@@ -366,7 +370,7 @@ async function chargerIndisponibilitesAdmin() {
 async function chargerAvisAdmin() {
   const { data, error } = await supabaseClient.from('avis').select('*').order('cree_le', { ascending: false });
   const tbody = document.getElementById('tbody-avis');
-  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="8">Erreur de chargement.</td></tr>'; return; }
 
   tbody.innerHTML = data.map(a => `
     <tr>
@@ -375,6 +379,7 @@ async function chargerAvisAdmin() {
       <td>${a.client_nom}</td>
       <td>${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</td>
       <td style="max-width:220px;">${a.commentaire || '—'}</td>
+      <td>${a.media_url ? `<a href="${a.media_url}" target="_blank" style="color:var(--terracotta-dark);">Voir</a>` : '—'}</td>
       <td>
         <select data-id="${a.id}" class="select-visible-avis">
           <option value="true" ${a.visible ? 'selected' : ''}>Visible</option>
