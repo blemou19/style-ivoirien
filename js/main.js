@@ -21,6 +21,7 @@ mainNav.querySelectorAll('a').forEach(link => {
 const PANIER_KEY = 'style_ivoirien_panier';
 const NUMERO_WHATSAPP = '224626321860';
 const NUMERO_WHATSAPP_FRANCE = '33744192080';
+const TAUX_EUR = 10800; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
 
 function genererReference() {
   const d = new Date();
@@ -52,11 +53,21 @@ function mettreAJourBadge() {
 function ajouterAuPanier(produit) {
   const panier = getPanier();
   const taille = produit.taille || '';
+  const stockMax = (produit.stock === null || produit.stock === undefined) ? null : Number(produit.stock);
   const existant = panier.find(item => item.id === produit.id && (item.taille || '') === taille);
+
   if (existant) {
+    if (stockMax !== null && existant.qty >= stockMax) {
+      alert(`Seulement ${stockMax} en stock pour ce produit.`);
+      return;
+    }
     existant.qty += 1;
   } else {
-    panier.push({ ...produit, taille, qty: 1 });
+    if (stockMax !== null && stockMax <= 0) {
+      alert('Ce produit est épuisé.');
+      return;
+    }
+    panier.push({ ...produit, taille, stock: stockMax, qty: 1 });
   }
   savePanier(panier);
   ouvrirPanier();
@@ -66,6 +77,12 @@ function modifierQuantite(id, taille, delta) {
   const panier = getPanier();
   const item = panier.find(i => i.id === id && (i.taille || '') === (taille || ''));
   if (!item) return;
+
+  if (delta > 0 && item.stock !== null && item.stock !== undefined && item.qty >= item.stock) {
+    alert(`Seulement ${item.stock} en stock pour ce produit.`);
+    return;
+  }
+
   item.qty += delta;
   const nouveauPanier = item.qty <= 0 ? panier.filter(i => !(i.id === id && (i.taille || '') === (taille || ''))) : panier;
   savePanier(nouveauPanier);
@@ -122,6 +139,21 @@ function creerPanierDrawer() {
         <option value="Livraison France (Angers)">Livraison France (Angers)</option>
         <option value="Autre / à discuter">Autre destination (à discuter)</option>
       </select>
+      <div id="panier-recap" class="panier-recap">
+        <div class="panier-recap-ligne">
+          <span>Prix du panier</span>
+          <span id="recap-prix-panier">0 GNF</span>
+        </div>
+        <div class="panier-recap-ligne">
+          <span id="recap-commission-label">Commission service</span>
+          <span id="recap-commission">0 GNF</span>
+        </div>
+        <div class="panier-recap-ligne panier-recap-total">
+          <span>Total à payer</span>
+          <span id="recap-total">0 GNF</span>
+        </div>
+        <p id="panier-recap-note" class="panier-recap-note" style="display:none;">⚠️ Ce montant ne couvre pas la livraison — les frais d'expédition seront communiqués séparément une fois votre colis prêt et pesé.</p>
+      </div>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
     </div>
@@ -142,7 +174,33 @@ document.addEventListener('change', (e) => {
     champ.placeholder = e.target.value === '33' ? 'Numéro sans le 0 (ex: 612345678)' : 'Numéro (ex: 622334455)';
     champAutre.style.display = e.target.value === 'autre' ? 'block' : 'none';
   }
+  if (e.target.id === 'panier-zone') {
+    majRecap();
+  }
 });
+
+function calculerCommission(zone, total) {
+  return zone.startsWith('Livraison France') ? Math.round(total * 0.10) : Math.round(total * 0.03);
+}
+
+function majRecap() {
+  const zoneEl = document.getElementById('panier-zone');
+  if (!zoneEl) return;
+  const zone = zoneEl.value;
+  const estFrance = zone.startsWith('Livraison France');
+  const panier = getPanier();
+  const total = calculerTotal(panier);
+  const commission = calculerCommission(zone, total);
+  const totalFinal = total + commission;
+
+  document.getElementById('recap-prix-panier').textContent = total.toLocaleString('fr-FR') + ' GNF' + (estFrance ? ` (≈ ${(total / TAUX_EUR).toFixed(2)} €)` : '');
+  document.getElementById('recap-commission-label').textContent = 'Commission service';
+  document.getElementById('recap-commission').textContent = estFrance
+    ? (commission / TAUX_EUR).toFixed(2) + ' €'
+    : commission.toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('recap-total').textContent = totalFinal.toLocaleString('fr-FR') + ' GNF' + (estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : '');
+  document.getElementById('panier-recap-note').style.display = estFrance ? 'block' : 'none';
+}
 
 function ouvrirPanier() {
   afficherPanier();
@@ -182,6 +240,7 @@ function afficherPanier() {
   }
 
   document.getElementById('panier-total-montant').textContent = calculerTotal(panier).toLocaleString('fr-FR') + ' GNF';
+  majRecap();
 }
 
 document.addEventListener('click', (e) => {
@@ -191,7 +250,7 @@ document.addEventListener('click', (e) => {
   if (target.matches('[data-action="supprimer"]')) supprimerDuPanier(target.dataset.id, target.dataset.taille);
 
   const boutonAjouter = target.closest('.btn-ajouter');
-  if (boutonAjouter && boutonAjouter.dataset.produit) {
+  if (boutonAjouter && boutonAjouter.dataset.produit && !boutonAjouter.disabled) {
     const produit = JSON.parse(decodeURIComponent(boutonAjouter.dataset.produit));
     if (!produit.tailleRequise) ajouterAuPanier(produit);
   }
@@ -223,6 +282,9 @@ async function envoyerCommande() {
 
   const total = calculerTotal(panier);
   const reference = genererReference();
+  const commission = calculerCommission(zone, total);
+  const estFrance = zone.startsWith('Livraison France');
+  const totalFinal = total + commission;
 
   const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
   const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -232,9 +294,13 @@ async function envoyerCommande() {
     `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
-  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n\nTotal : ${total.toLocaleString('fr-FR')} GNF\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
+  const recap = estFrance
+    ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\n(Frais de livraison communiqués séparément après pesée du colis)\n`
+    : `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF\nCommission service : ${commission.toLocaleString('fr-FR')} GNF\nTotal à payer : ${totalFinal.toLocaleString('fr-FR')} GNF\n`;
 
-  const numeroDestinataire = zone.startsWith('Livraison France') ? NUMERO_WHATSAPP_FRANCE : NUMERO_WHATSAPP;
+  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n${recap}\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
+
+  const numeroDestinataire = estFrance ? NUMERO_WHATSAPP_FRANCE : NUMERO_WHATSAPP;
   window.open(`https://wa.me/${numeroDestinataire}?text=${encodeURIComponent(message)}`, '_blank');
 
   savePanier([]);
@@ -247,7 +313,8 @@ async function envoyerCommande() {
     total: total,
     statut: 'En attente',
     zone_livraison: zone,
-    reference: reference
+    reference: reference,
+    commission_gnf: commission
   });
   if (error) console.error('Erreur enregistrement commande :', error);
 }
