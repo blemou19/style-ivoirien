@@ -12,7 +12,8 @@
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></head>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 <body>
 
 <header>
@@ -296,6 +297,11 @@
 
     conteneur.innerHTML = data.map(a => `
       <div class="avis-carte">
+        ${a.media_url ? (
+          a.media_url.match(/\.(mp4|mov|webm)$/i)
+            ? `<video src="${a.media_url}" controls class="avis-media"></video>`
+            : `<img src="${a.media_url}" alt="Photo client" class="avis-media">`
+        ) : ''}
         <div class="avis-etoiles-affichage">${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</div>
         <p class="avis-commentaire">${a.commentaire || ''}</p>
         <span class="avis-auteur">— ${a.client_nom}</span>
