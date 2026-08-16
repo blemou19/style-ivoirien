@@ -784,3 +784,6 @@
 .barre-selection span{ font-size:14px; }
 
 .modeles-choisis-box{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
+
+
+.avis-media{ width:100%; border-radius:8px; margin-bottom:10px; max-height:220px; object-fit:cover; }
