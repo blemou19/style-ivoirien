@@ -24,6 +24,7 @@ document.querySelectorAll('#avis-etoiles span').forEach(etoile => {
 document.getElementById('form-avis').addEventListener('submit', async (e) => {
   e.preventDefault();
   const messageEl = document.getElementById('avis-message');
+  const boutonSubmit = e.target.querySelector('button[type="submit"]');
 
   if (!noteChoisie) {
     messageEl.textContent = 'Merci de choisir une note en cliquant sur les étoiles.';
@@ -33,17 +34,39 @@ document.getElementById('form-avis').addEventListener('submit', async (e) => {
   const nom = document.getElementById('avis-nom').value.trim();
   const type = document.querySelector('input[name="avis-type"]:checked').value;
   const commentaire = document.getElementById('avis-commentaire').value.trim();
+  const fichierMedia = document.getElementById('avis-media').files[0];
+
+  boutonSubmit.disabled = true;
+  boutonSubmit.textContent = 'Envoi en cours...';
+
+  let mediaUrl = '';
+  if (fichierMedia) {
+    const nomFichier = `${Date.now()}-${fichierMedia.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUpload } = await supabaseClient.storage.from('avis').upload(nomFichier, fichierMedia);
+    if (erreurUpload) {
+      messageEl.textContent = "Erreur lors de l'envoi du fichier, réessaie.";
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = 'Envoyer mon avis';
+      return;
+    }
+    const { data: urlData } = supabaseClient.storage.from('avis').getPublicUrl(nomFichier);
+    mediaUrl = urlData.publicUrl;
+  }
 
   const { error } = await supabaseClient.from('avis').insert({
     type: type,
     reference: refParam || null,
     client_nom: nom,
     note: noteChoisie,
-    commentaire: commentaire
+    commentaire: commentaire,
+    media_url: mediaUrl || null
   });
+
+  boutonSubmit.disabled = false;
 
   if (error) {
     messageEl.textContent = "Un problème est survenu, réessaie dans un instant.";
+    boutonSubmit.textContent = 'Envoyer mon avis';
     console.error(error);
     return;
   }
