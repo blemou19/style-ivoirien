@@ -286,8 +286,7 @@ async function envoyerCommande() {
   const estFrance = zone.startsWith('Livraison France');
   const totalFinal = total + commission;
 
-  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, date: new Date().toISOString() };
-  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, commission, totalFinal, estFrance, date: new Date().toISOString() };  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
   const lignes = panier.map(item =>
