@@ -156,7 +156,7 @@ function creerPanierDrawer() {
           <span>Total à payer</span>
           <span id="recap-total">0 GNF</span>
         </div>
-        <p id="panier-recap-note" class="panier-recap-note" style="display:none;">⚠️ Ce montant ne couvre pas la livraison — les frais d'expédition seront communiqués séparément une fois votre colis prêt et pesé.</p>
+        <p id="panier-recap-note" class="panier-recap-note" style="display:none;">⚠️ Ce montant ne couvre pas la livraison. Les frais d'expédition (environ 12€/kg, soit ≈ 121 200 GNF/kg) seront communiqués séparément une fois votre colis prêt et pesé.</p>
       </div>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
@@ -312,7 +312,7 @@ async function envoyerCommande() {
   ).join('\n');
 
   const recap = estFrance
-    ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\n(Frais de livraison communiqués séparément après pesée du colis)\n`
+    ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\nFrais de livraison : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué après pesée du colis\n`
     : `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF\nCommission service : ${commission.toLocaleString('fr-FR')} GNF\nTotal à payer : ${totalFinal.toLocaleString('fr-FR')} GNF\n`;
 
   const infoPaiement = `\nMoyen de paiement souhaité : ${moyenPaiement}\n`;
