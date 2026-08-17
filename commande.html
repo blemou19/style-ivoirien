@@ -85,7 +85,7 @@
             <span>Total à payer</span>
             <span>${totalFinal.toLocaleString('fr-FR')} GNF${estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : ''}</span>
           </div>
-          ${estFrance ? '<p class="panier-recap-note">⚠️ Ce montant ne couvre pas la livraison — les frais d\'expédition seront communiqués séparément une fois le colis prêt et pesé.</p>' : ''}
+          ${estFrance ? '<p class="panier-recap-note">⚠️ Ce montant ne couvre pas la livraison. Frais d\'expédition : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué séparément une fois le colis prêt et pesé.</p>' : ''}
         </div>
       `;
 
