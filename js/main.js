@@ -341,3 +341,61 @@ async function envoyerCommande() {
 
 creerPanierDrawer();
 mettreAJourBadge();
+
+// ===================== BANNIÈRE D'INSTALLATION =====================
+let deferredInstallPrompt = null;
+
+function estStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function estIOS() {
+  return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+}
+
+function creerBanniereInstall() {
+  if (estStandalone()) return; // déjà installé, on n'affiche rien
+  if (localStorage.getItem('si_install_dismiss') === 'true') return; // déjà fermé une fois
+
+  const banniere = document.createElement('div');
+  banniere.id = 'install-banniere';
+  banniere.className = 'install-banniere';
+  banniere.innerHTML = `
+    <div class="install-banniere-texte">
+      <strong>📲 Installer Style Ivoirien</strong>
+      <span id="install-banniere-sous-texte">Accédez au site en un tap, comme une application.</span>
+    </div>
+    <div class="install-banniere-actions">
+      <button id="install-banniere-bouton" class="btn btn-primary" style="display:none;">Installer</button>
+      <button id="install-banniere-fermer" class="install-banniere-fermer" aria-label="Fermer">&times;</button>
+    </div>
+  `;
+  document.body.appendChild(banniere);
+
+  document.getElementById('install-banniere-fermer').addEventListener('click', () => {
+    banniere.remove();
+    localStorage.setItem('si_install_dismiss', 'true');
+  });
+
+  if (estIOS()) {
+    document.getElementById('install-banniere-sous-texte').textContent =
+      'Appuyez sur Partager (⬆️) puis "Sur l\'écran d\'accueil".';
+  } else {
+    const boutonInstaller = document.getElementById('install-banniere-bouton');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      boutonInstaller.style.display = 'inline-flex';
+    });
+    boutonInstaller.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      banniere.remove();
+      localStorage.setItem('si_install_dismiss', 'true');
+    });
+  }
+}
+
+creerBanniereInstall();
