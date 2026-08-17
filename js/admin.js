@@ -15,7 +15,7 @@ loginForm.addEventListener('submit', async (e) => {
   const email = document.getElementById('admin-email').value.trim();
   const code = document.getElementById('admin-code').value.trim();
 
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password: code }); 
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password: code });
   if (error) {
     loginErreur.textContent = "Code incorrect. Réessaie.";
     return;
