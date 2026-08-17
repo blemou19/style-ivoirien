@@ -6,7 +6,7 @@ function getModelesChoisis() {
 
 function retirerModeleChoisi(id) {
   const liste = getModelesChoisis().filter(m => m.id !== id);
-  localStorage.setItem(MODELES_KEY, JSON.stringify(liste));
+  localStorage.setItem(MODELES_KEY, JSON.stringify(liste)); 
   afficherModelesChoisis();
 }
 
