@@ -196,6 +196,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const heure = document.getElementById('sm-heure').value;
   const notes = document.getElementById('sm-notes').value.trim();
+  const moyenPaiement = document.getElementById('sm-paiement').value;
   const modeles = getModelesChoisis();
   const modeleRef = modeles.length > 0 ? modeles.map(m => m.nom).join(' / ') : null;
   const modeleImage = modeles.length > 0 ? modeles[0].image_url : null;
@@ -216,7 +217,8 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     notes: notes,
     statut: 'Nouvelle demande',
     modele_ref: modeleRef,
-    modele_image: modeleImage
+    modele_image: modeleImage,
+    moyen_paiement: moyenPaiement
   });
 
   if (error) {
@@ -239,6 +241,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
     (notes ? `Notes : ${notes}\n` : '') +
+    `Moyen de paiement souhaité : ${moyenPaiement}\n` +
     `Nom : ${nom}\nTéléphone : ${telephone}`;
 
   const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
