@@ -235,7 +235,7 @@ async function chargerCommandesAdmin() {
     <tr>
       <td>${c.reference || '—'}<br><span style="color:#7a6f64; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
       <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
-      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}</span></td>
+      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}${c.moyen_paiement ? ' — ' + c.moyen_paiement : ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
       <td>${c.commission_gnf ? Number(c.commission_gnf).toLocaleString('fr-FR') + ' GNF' : '—'}</td>
       <td>
@@ -292,7 +292,7 @@ async function chargerRendezVousAdmin() {
       <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
       <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
       <td>${r.type_vetement}${r.modele_ref ? `<br><span style="color:#7a6f64; font-size:11px;">Catalogue : ${r.modele_ref}</span>` : ''}</td>
-      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.zone_livraison || ''}</span></td>
+      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.moyen_paiement || ''}</span></td>
       <td>
         <select data-id="${r.id}" class="select-statut-rdv">
           <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
