@@ -21,7 +21,7 @@ mainNav.querySelectorAll('a').forEach(link => {
 const PANIER_KEY = 'style_ivoirien_panier';
 const NUMERO_WHATSAPP = '224626321860';
 const NUMERO_WHATSAPP_FRANCE = '33744192080';
-const TAUX_EUR = 10800; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
+const TAUX_EUR = 10100; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
 
 function genererReference() {
   const d = new Date();
@@ -139,6 +139,10 @@ function creerPanierDrawer() {
         <option value="Livraison France (Angers)">Livraison France (Angers)</option>
         <option value="Autre / à discuter">Autre destination (à discuter)</option>
       </select>
+      <select id="panier-paiement" class="panier-input">
+        <option value="Orange Money">Orange Money</option>
+        <option value="Espèces en boutique">Espèces en boutique</option>
+      </select>
       <div id="panier-recap" class="panier-recap">
         <div class="panier-recap-ligne">
           <span>Prix du panier</span>
@@ -176,8 +180,19 @@ document.addEventListener('change', (e) => {
   }
   if (e.target.id === 'panier-zone') {
     majRecap();
+    majOptionsPaiement();
   }
 });
+
+function majOptionsPaiement() {
+  const zone = document.getElementById('panier-zone').value;
+  const selectPaiement = document.getElementById('panier-paiement');
+  const estFrance = zone.startsWith('Livraison France');
+
+  selectPaiement.innerHTML = estFrance
+    ? `<option value="Carte bancaire">Carte bancaire</option><option value="Wero">Wero</option>`
+    : `<option value="Orange Money">Orange Money</option><option value="Espèces en boutique">Espèces en boutique</option>`;
+}
 
 function calculerCommission(zone, total) {
   return zone.startsWith('Livraison France') ? Math.round(total * 0.10) : Math.round(total * 0.03);
@@ -241,6 +256,7 @@ function afficherPanier() {
 
   document.getElementById('panier-total-montant').textContent = calculerTotal(panier).toLocaleString('fr-FR') + ' GNF';
   majRecap();
+  majOptionsPaiement();
 }
 
 document.addEventListener('click', (e) => {
@@ -270,6 +286,7 @@ async function envoyerCommande() {
   const numeroLocal = document.getElementById('panier-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
   const telephone = numeroLocal ? `+${indicatif}${numeroLocal}` : '';
   const zone = document.getElementById('panier-zone').value;
+  const moyenPaiement = document.getElementById('panier-paiement').value;
 
   if (panier.length === 0) {
     alert('Votre panier est vide.');
@@ -286,7 +303,8 @@ async function envoyerCommande() {
   const estFrance = zone.startsWith('Livraison France');
   const totalFinal = total + commission;
 
-  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, commission, totalFinal, estFrance, date: new Date().toISOString() };  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, commission, totalFinal, estFrance, date: new Date().toISOString() };
+  const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
   const lignes = panier.map(item =>
@@ -297,7 +315,9 @@ async function envoyerCommande() {
     ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\n(Frais de livraison communiqués séparément après pesée du colis)\n`
     : `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF\nCommission service : ${commission.toLocaleString('fr-FR')} GNF\nTotal à payer : ${totalFinal.toLocaleString('fr-FR')} GNF\n`;
 
-  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n${recap}\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
+  const infoPaiement = `\nMoyen de paiement souhaité : ${moyenPaiement}\n`;
+
+  const message = `Bonjour, je souhaite commander (réf. ${reference}) :\n${lignes}\n${recap}${infoPaiement}\nZone : ${zone}\nNom : ${nom}\nTéléphone : ${telephone}\n\nVoir le détail avec photos : ${lienDetail}`;
 
   const numeroDestinataire = estFrance ? NUMERO_WHATSAPP_FRANCE : NUMERO_WHATSAPP;
   window.open(`https://wa.me/${numeroDestinataire}?text=${encodeURIComponent(message)}`, '_blank');
@@ -313,7 +333,8 @@ async function envoyerCommande() {
     statut: 'En attente',
     zone_livraison: zone,
     reference: reference,
-    commission_gnf: commission
+    commission_gnf: commission,
+    moyen_paiement: moyenPaiement
   });
   if (error) console.error('Erreur enregistrement commande :', error);
 }
