@@ -111,6 +111,9 @@
           <span id="modal-prix" class="produit-modal-prix"></span>
           <p id="modal-desc" class="produit-modal-desc"></p>
           <div id="modal-tailles" class="produit-modal-tailles"></div>
+          <p id="modal-taille-alternative" style="display:none; font-size:12px; margin:4px 0 0;">
+            Vous ne trouvez pas votre taille ? <a href="#" id="modal-lien-sur-mesure" style="color:var(--terracotta-dark); text-decoration:underline;">Cliquez ici pour demander une couture sur mesure</a>
+          </p>
           <div class="produit-modal-qty">
             <button type="button" id="modal-qty-moins">−</button>
             <span id="modal-qty-valeur">1</span>
@@ -217,14 +220,22 @@
     document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
 
     const taillesEl = document.getElementById('modal-tailles');
+    const altEl = document.getElementById('modal-taille-alternative');
     if (p.tailles) {
       const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
       apercuTailleChoisie = listeTailles[0] || '';
       taillesEl.innerHTML = listeTailles.map((t, i) =>
         `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${t}">${t}</span>`
       ).join('');
+      altEl.style.display = 'block';
+      document.getElementById('modal-lien-sur-mesure').onclick = (e) => {
+        e.preventDefault();
+        localStorage.setItem('style_ivoirien_modeles_choisis', JSON.stringify([{ id: p.id, nom: p.nom, image_url: p.image_url || '' }]));
+        window.location.href = 'rendez-vous.html';
+      };
     } else {
       taillesEl.innerHTML = '';
+      altEl.style.display = 'none';
     }
 
     document.getElementById('modal-ajouter').onclick = () => {
