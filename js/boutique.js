@@ -156,15 +156,23 @@ function ouvrirDetailProduit(id) {
   boutonAjouterModal.textContent = epuise ? 'Épuisé' : 'Ajouter au panier';
 
   const taillesEl = document.getElementById('modal-tailles');
+  const altEl = document.getElementById('modal-taille-alternative');
   if (p.tailles) {
     const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
     modalTailleChoisie = listeTailles[0] || '';
     taillesEl.innerHTML = listeTailles.map((t, i) =>
       `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${t}">${t}</span>`
     ).join('');
+    altEl.style.display = 'block';
+    document.getElementById('modal-lien-sur-mesure').onclick = (e) => {
+      e.preventDefault();
+      localStorage.setItem('style_ivoirien_modeles_choisis', JSON.stringify([{ id: p.id, nom: p.nom, image_url: p.image_url || '' }]));
+      window.location.href = 'rendez-vous.html';
+    };
   } else {
     modalTailleChoisie = '';
     taillesEl.innerHTML = '';
+    altEl.style.display = 'none';
   }
 
   document.getElementById('modal-ajouter').dataset.produit = encodeURIComponent(JSON.stringify({
