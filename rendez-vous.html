@@ -12,7 +12,8 @@
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></head>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
 <body>
 
 <header>
@@ -96,6 +97,11 @@
       </div>
       <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
       <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité / description de votre projet" required>
+      <label style="font-size:13px; color:#7a6f64;">
+        Vous avez une photo du modèle souhaité ? Joignez-la ici (optionnel)
+        <input type="file" id="sm-photo-modele" accept="image/*" style="margin-top:6px; display:block;">
+      </label>
+      <p id="sm-photo-statut" style="font-size:12px; color:#7a6f64; margin:0;"></p>
 
       <div class="sm-mesures-toggle">
         <p class="sm-label">Connaissez-vous vos mesures ?</p>
@@ -130,6 +136,12 @@
         <label><input type="radio" name="mode" value="À l'atelier" checked> À l'atelier</label>
         <label><input type="radio" name="mode" value="En ligne (WhatsApp, téléphone...)"> En ligne</label>
       </div>
+
+      <select id="sm-paiement">
+        <option value="Orange Money">Orange Money</option>
+        <option value="Espèces en boutique">Espèces en boutique</option>
+        <option value="Carte bancaire / Wero (France)">Carte bancaire / Wero (France)</option>
+      </select>
 
       <label class="sm-label" for="sm-heure">Heure souhaitée</label>
       <input type="time" id="sm-heure" required value="14:00" step="900">
