@@ -283,7 +283,7 @@ let rdvCache = [];
 async function chargerRendezVousAdmin() {
   const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true });
   const tbody = document.getElementById('tbody-rdv');
-  if (error || !data) { tbody.innerHTML = '<tr><td colspan="6">Erreur de chargement.</td></tr>'; return; }
+  if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
 
   rdvCache = data;
 
@@ -291,8 +291,9 @@ async function chargerRendezVousAdmin() {
     <tr>
       <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
       <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
-      <td>${r.type_vetement}${r.modele_ref ? `<br><span style="color:#7a6f64; font-size:11px;">Catalogue : ${r.modele_ref}</span>` : ''}</td>
+      <td>${r.type_vetement}${r.modele_ref ? `<br><span style="color:#7a6f64; font-size:11px;">Catalogue : ${r.modele_ref}</span>` : ''}${r.photo_modele_url ? `<br><a href="${r.photo_modele_url}" target="_blank" style="color:var(--terracotta-dark); font-size:11px;">Voir photo jointe</a>` : ''}</td>
       <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.moyen_paiement || ''}</span></td>
+      <td><input type="number" class="input-devis" data-id="${r.id}" value="${r.devis_gnf || ''}" placeholder="Montant" style="width:110px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); font-size:12px;"></td>
       <td>
         <select data-id="${r.id}" class="select-statut-rdv">
           <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
@@ -311,16 +312,28 @@ async function chargerRendezVousAdmin() {
     });
   });
 
+  document.querySelectorAll('.input-devis').forEach(input => {
+    input.addEventListener('change', async () => {
+      const valeur = input.value === '' ? null : Number(input.value);
+      await supabaseClient.from('rendez_vous').update({ devis_gnf: valeur }).eq('id', input.dataset.id);
+      const r = rdvCache.find(x => x.id === input.dataset.id);
+      if (r) r.devis_gnf = valeur;
+    });
+  });
+
   document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = rdvCache.find(x => x.id === btn.dataset.id);
       if (!r) return;
       const statutActuel = document.querySelector(`.select-statut-rdv[data-id="${r.id}"]`).value;
       const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const devisInput = document.querySelector(`.input-devis[data-id="${r.id}"]`);
+      const devisActuel = devisInput ? devisInput.value : (r.devis_gnf || '');
+      const devisTexte = devisActuel ? ` Le devis pour cette création est de ${Number(devisActuel).toLocaleString('fr-FR')} GNF.` : '';
 
       const messages = {
         'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
-        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}. À bientôt !`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}.${devisTexte} À bientôt !`,
         'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)} — et à revenir vers nous pour une prochaine création.`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
