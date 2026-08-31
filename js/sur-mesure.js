@@ -184,6 +184,27 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     return;
   }
 
+  const boutonSubmitSM = e.target.querySelector('button[type="submit"]');
+  const fichierPhotoModele = document.getElementById('sm-photo-modele').files[0];
+  const statutPhotoEl = document.getElementById('sm-photo-statut');
+  let photoModeleUrl = '';
+
+  if (fichierPhotoModele) {
+    boutonSubmitSM.disabled = true;
+    statutPhotoEl.textContent = 'Envoi de la photo...';
+    const nomFichier = `${Date.now()}-${fichierPhotoModele.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: erreurUploadPhoto } = await supabaseClient.storage.from('rendez-vous').upload(nomFichier, fichierPhotoModele);
+    if (erreurUploadPhoto) {
+      statutPhotoEl.textContent = "Erreur lors de l'envoi de la photo, réessaie.";
+      boutonSubmitSM.disabled = false;
+      return;
+    }
+    const { data: urlDataPhoto } = supabaseClient.storage.from('rendez-vous').getPublicUrl(nomFichier);
+    photoModeleUrl = urlDataPhoto.publicUrl;
+    statutPhotoEl.textContent = '';
+    boutonSubmitSM.disabled = false;
+  }
+
   const nom = document.getElementById('sm-nom').value.trim();
   const indicatifSelect = document.getElementById('sm-indicatif').value;
   const indicatif = indicatifSelect === 'autre'
@@ -218,7 +239,8 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     statut: 'Nouvelle demande',
     modele_ref: modeleRef,
     modele_image: modeleImage,
-    moyen_paiement: moyenPaiement
+    moyen_paiement: moyenPaiement,
+    photo_modele_url: photoModeleUrl || null
   });
 
   if (error) {
@@ -237,6 +259,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   const message = `Bonjour, je souhaite une création sur mesure :\n` +
     `Vêtement : ${vetement}\n` +
     (modeles.length > 0 ? `Modèle(s) inspiré(s) du catalogue :\n${lignesModeles}\n` : '') +
+    (photoModeleUrl ? `Photo de référence : ${photoModeleUrl}\n` : '') +
     `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
