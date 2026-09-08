@@ -19,7 +19,7 @@ mainNav.querySelectorAll('a').forEach(link => {
 
 // ===================== PANIER =====================
 const PANIER_KEY = 'style_ivoirien_panier';
-const NUMERO_WHATSAPP = '224626321860';
+const NUMERO_WHATSAPP = '33744192080';
 const NUMERO_WHATSAPP_FRANCE = '33744192080';
 const TAUX_EUR = 10100; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
 
