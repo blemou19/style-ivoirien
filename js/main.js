@@ -242,7 +242,7 @@ function afficherPanier() {
           ${item.image_url ? `<img src="${urlSure(item.image_url)}" alt="${esc(item.nom)}">` : ''}
         </div>
         <div class="panier-item-info">
-          <span class="panier-item-nom">${esc(item.nom)}${item.taille ? ` — Taille ${esc(item.taille)}` : ''}</span>
+          <span class="panier-item-nom">${esc(item.nom)}${item.taille ? `, taille ${esc(item.taille)}` : ''}</span>
           <span class="panier-item-prix">${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
           <div class="panier-item-qty">
             <button data-action="moins" data-id="${esc(item.id)}" data-taille="${esc(item.taille || '')}">−</button>

@@ -237,7 +237,7 @@ async function chargerCommandesAdmin() {
     <tr>
       <td>${esc(c.reference || '—')}<br><span style="color:#665b51; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
       <td>${esc(c.client_nom)}<br><span style="color:#665b51;">${esc(c.client_telephone)}</span></td>
-      <td>${c.articles.length} article(s)<br><span style="color:#665b51; font-size:11px;">${esc(c.zone_livraison || '')}${c.moyen_paiement ? ' — ' + esc(c.moyen_paiement) : ''}</span></td>
+      <td>${c.articles.length} article(s)<br><span style="color:#665b51; font-size:11px;">${esc(c.zone_livraison || '')}${c.moyen_paiement ? ' · ' + esc(c.moyen_paiement) : ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
       <td>${c.commission_gnf ? Number(c.commission_gnf).toLocaleString('fr-FR') + ' GNF' : '—'}</td>
       <td>
@@ -336,7 +336,7 @@ async function chargerRendezVousAdmin() {
       const messages = {
         'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
         'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}.${devisTexte} À bientôt !`,
-        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)} — et à revenir vers nous pour une prochaine création.`,
+        'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)}\n\nÀ bientôt pour une prochaine création !`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
       const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
