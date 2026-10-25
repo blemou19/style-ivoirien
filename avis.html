@@ -4,11 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laisser un avis — Style Ivoirien</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<meta name="description" content="Partagez votre expérience avec Style Ivoirien : note, commentaire et photo de votre tenue.">
+<link rel="canonical" href="https://styleivoirien.com/avis.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Style Ivoirien">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Laisser un avis — Style Ivoirien">
+<meta property="og:description" content="Partagez votre expérience avec Style Ivoirien : note, commentaire et photo de votre tenue.">
+<meta property="og:url" content="https://styleivoirien.com/avis.html">
+<meta property="og:image" content="https://styleivoirien.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +33,7 @@
   <div class="header-inner">
     <a href="index.html" class="logo">
       <span class="logo-mark">
-        <img src="img/logo.png" alt="Style Ivoirien">
+        <img src="img/logo.png" alt="Style Ivoirien" width="44" height="44">
       </span>
       <span class="logo-text">
         <span class="line1">Style Ivoirien</span>
@@ -39,7 +52,8 @@
 <section>
   <div class="wrap" style="max-width:480px;">
     <form id="form-avis" class="form-sur-mesure">
-      <input type="text" id="avis-nom" placeholder="Votre nom" required>
+      <input type="text" id="avis-nom" placeholder="Votre nom" required maxlength="80" autocomplete="name">
+      <input type="text" name="site_web" class="champ-piege" tabindex="-1" autocomplete="off" aria-hidden="true">
 
       <p class="sm-label">Concernant</p>
       <div class="sm-mode">
@@ -56,14 +70,15 @@
         <span data-valeur="5">★</span>
       </div>
 
-      <textarea id="avis-commentaire" placeholder="Votre commentaire (optionnel)" rows="4"></textarea>
-      <label style="font-size:13px; color:#7a6f64;">
+      <textarea id="avis-commentaire" placeholder="Votre commentaire (optionnel)" rows="4" maxlength="1000"></textarea>
+      <label style="font-size:13px; color:#665b51;">
         Photo ou vidéo du produit reçu (optionnel)
         <input type="file" id="avis-media" accept="image/*,video/*" style="margin-top:6px; display:block;">
       </label>
 
       <button type="submit" class="btn btn-primary">Envoyer mon avis</button>
-      <p id="avis-message" style="font-size:13px; text-align:center; color:#7a6f64;"></p>
+      <p style="font-size:12px; color:#665b51; margin:0; text-align:center;">Votre nom et votre avis pourront être publiés sur le site après validation. <a href="confidentialite.html">En savoir plus</a></p>
+      <p id="avis-message" style="font-size:13px; text-align:center; color:#665b51;"></p>
     </form>
   </div>
 </section>
@@ -71,10 +86,13 @@
 <footer>
   <div class="footer-bottom" style="max-width:1100px; margin:0 auto; padding:24px;">
     <span>© 2026 Style Ivoirien</span>
+    <span class="footer-legal"><a href="mentions-legales.html" class="admin-link">Mentions légales &amp; CGV</a>
+    <a href="confidentialite.html" class="admin-link">Confidentialité</a></span>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/securite.js"></script>
 <script>
   const SUPABASE_URL = "https://shuzyobfytegnlyulgdj.supabase.co";
   const SUPABASE_KEY = "sb_publishable_AHhrwdfio4wPM2kcUjdZ8w_DReukYdM";

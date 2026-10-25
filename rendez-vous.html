@@ -4,11 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prendre rendez-vous — Style Ivoirien</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<meta name="description" content="Demandez une création sur mesure : choisissez une date, décrivez votre modèle ou envoyez une photo, réponse rapide sur WhatsApp.">
+<link rel="canonical" href="https://styleivoirien.com/rendez-vous.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Style Ivoirien">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Prendre rendez-vous — Style Ivoirien">
+<meta property="og:description" content="Demandez une création sur mesure : choisissez une date, décrivez votre modèle ou envoyez une photo, réponse rapide sur WhatsApp.">
+<meta property="og:url" content="https://styleivoirien.com/rendez-vous.html">
+<meta property="og:image" content="https://styleivoirien.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +33,7 @@
   <div class="header-inner">
     <a href="index.html" class="logo">
       <span class="logo-mark">
-        <img src="img/logo.png" alt="Style Ivoirien">
+        <img src="img/logo.png" alt="Style Ivoirien" width="44" height="44">
       </span>
       <span class="logo-text">
         <span class="line1">Style Ivoirien</span>
@@ -80,7 +93,8 @@
         <a href="catalogue.html" id="lien-catalogue" class="btn btn-outline" style="display:none; margin-top:8px;">Parcourir le catalogue</a>
       </div>
 
-      <input type="text" id="sm-nom" placeholder="Votre nom" required>
+      <input type="text" id="sm-nom" placeholder="Votre nom" required maxlength="80" autocomplete="name">
+      <input type="text" name="site_web" class="champ-piege" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div style="display:flex; gap:8px;">
         <select id="sm-indicatif" style="flex:0 0 130px;">
           <option value="224">🇬🇳 Guinée +224</option>
@@ -93,15 +107,15 @@
           <option value="33">🇫🇷 France +33</option>
           <option value="autre">🌍 Autre pays</option>
         </select>
-        <input type="tel" id="sm-telephone" placeholder="Numéro (ex: 622334455)" required style="flex:1;">
+        <input type="tel" id="sm-telephone" placeholder="Numéro (ex: 622334455)" required maxlength="20" inputmode="tel" autocomplete="tel-national" style="flex:1;">
       </div>
       <input type="text" id="sm-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" style="display:none;">
-      <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité / description de votre projet" required>
-      <label style="font-size:13px; color:#7a6f64;">
+      <input type="text" id="sm-vetement" placeholder="Type de vêtement souhaité / description de votre projet" required maxlength="300">
+      <label style="font-size:13px; color:#665b51;">
         Vous avez une photo du modèle souhaité ? Joignez-la ici (optionnel)
         <input type="file" id="sm-photo-modele" accept="image/*" style="margin-top:6px; display:block;">
       </label>
-      <p id="sm-photo-statut" style="font-size:12px; color:#7a6f64; margin:0;"></p>
+      <p id="sm-photo-statut" style="font-size:12px; color:#665b51; margin:0;"></p>
 
       <div class="sm-mesures-toggle">
         <p class="sm-label">Connaissez-vous vos mesures ?</p>
@@ -113,22 +127,22 @@
 
       <div id="bloc-mesures" class="mesures-grid" style="display:none;">
         <label class="mesure-champ">Tour de poitrine
-          <div class="mesure-input"><input type="number" id="m-poitrine" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-poitrine" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
         <label class="mesure-champ">Tour de taille
-          <div class="mesure-input"><input type="number" id="m-taille" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-taille" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
         <label class="mesure-champ">Tour de hanches
-          <div class="mesure-input"><input type="number" id="m-hanches" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-hanches" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
         <label class="mesure-champ">Longueur souhaitée
-          <div class="mesure-input"><input type="number" id="m-longueur" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-longueur" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
         <label class="mesure-champ">Tour de bras
-          <div class="mesure-input"><input type="number" id="m-bras" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-bras" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
         <label class="mesure-champ">Épaules
-          <div class="mesure-input"><input type="number" id="m-epaules" min="0" step="0.5"><span>cm</span></div>
+          <div class="mesure-input"><input type="number" id="m-epaules" min="0" max="300" step="0.5"><span>cm</span></div>
         </label>
       </div>
 
@@ -145,10 +159,11 @@
 
       <label class="sm-label" for="sm-heure">Heure souhaitée</label>
       <input type="time" id="sm-heure" required value="14:00" step="900">
-      <p id="heures-prises-affichage" style="font-size:12px; color:#7a6f64; margin-top:-6px;"></p>
+      <p id="heures-prises-affichage" style="font-size:12px; color:#665b51; margin-top:-6px;"></p>
 
-      <textarea id="sm-notes" placeholder="Notes complémentaires (optionnel)" rows="2"></textarea>
+      <textarea id="sm-notes" placeholder="Notes complémentaires (optionnel)" rows="2" maxlength="1000"></textarea>
       <button type="submit" class="btn btn-primary">Envoyer la demande via WhatsApp</button>
+      <p style="font-size:12px; color:#665b51; margin:0;">En envoyant ce formulaire, vous acceptez notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
     </form>
   </div>
 </section>
@@ -168,16 +183,19 @@
     </div>
     <div class="footer-links">
       <h4>Contact</h4>
-      <a href="https://wa.me/224626321860" target="_blank">WhatsApp : +224 62 63 21 860</a>
+      <a href="https://wa.me/224626321860" target="_blank" rel="noopener">WhatsApp : +224 62 63 21 860</a>
     </div>
   </div>
   <div class="footer-bottom">
     <span>© 2026 Style Ivoirien — tous droits réservés</span>
-    <a href="admin.html" class="admin-link">Espace pro</a>
+    <span class="footer-legal"><a href="mentions-legales.html" class="admin-link">Mentions légales &amp; CGV</a>
+    <a href="confidentialite.html" class="admin-link">Confidentialité</a>
+    <a href="admin.html" class="admin-link">Espace pro</a></span>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/securite.js"></script>
 <script src="js/main.js"></script>
 <script src="js/sur-mesure.js"></script>
 </body>

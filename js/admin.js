@@ -95,7 +95,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
   e.preventDefault();
   const boutonSubmit = document.getElementById('p-submit-btn');
   const statutEl = document.getElementById('p-image-statut');
-  const fichierImage = document.getElementById('p-image-file').files[0];
+  let fichierImage = document.getElementById('p-image-file').files[0];
   const fichierVideo = document.getElementById('p-video-file').files[0];
   const editId = document.getElementById('p-edit-id').value;
 
@@ -106,6 +106,8 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
   let videoUrl = document.getElementById('p-video').value || '';
 
   if (fichierImage) {
+    statutEl.textContent = 'Compression de la photo...';
+    fichierImage = await compresserImage(fichierImage);
     statutEl.textContent = 'Envoi de la photo...';
     const nomFichier = `${Date.now()}-${fichierImage.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const { error: erreurUpload } = await supabaseClient.storage.from('produits').upload(nomFichier, fichierImage);
@@ -176,21 +178,21 @@ async function chargerProduitsAdmin() {
 
   tbody.innerHTML = data.map(p => `
     <tr>
-      <td>${p.image_url ? `<img src="${p.image_url}" alt="">` : '—'}</td>
+      <td>${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="">` : '—'}</td>
       <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
-      <td>${p.nom}${p.video_url ? ' 🎥' : ''}</td>
-      <td>${p.categorie}</td>
+      <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}</td>
+      <td>${esc(p.categorie)}</td>
       <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
       <td>${p.stock !== null && p.stock !== undefined ? p.stock : '∞'}</td>
       <td>
-        <select data-id="${p.id}" class="select-actif-produit">
+        <select data-id="${esc(p.id)}" class="select-actif-produit">
           <option value="true" ${p.actif ? 'selected' : ''}>En vente</option>
           <option value="false" ${!p.actif ? 'selected' : ''}>Masqué</option>
         </select>
       </td>
       <td style="white-space:nowrap;">
-        <button class="admin-action-btn" data-id="${p.id}" data-action="modifier-produit">Modifier</button>
-        <button class="admin-action-btn" data-id="${p.id}" data-action="supprimer-produit">Supprimer</button>
+        <button class="admin-action-btn" data-id="${esc(p.id)}" data-action="modifier-produit">Modifier</button>
+        <button class="admin-action-btn" data-id="${esc(p.id)}" data-action="supprimer-produit">Supprimer</button>
       </td>
     </tr>
   `).join('');
@@ -233,20 +235,20 @@ async function chargerCommandesAdmin() {
 
   tbody.innerHTML = data.map(c => `
     <tr>
-      <td>${c.reference || '—'}<br><span style="color:#7a6f64; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
-      <td>${c.client_nom}<br><span style="color:#7a6f64;">${c.client_telephone}</span></td>
-      <td>${c.articles.length} article(s)<br><span style="color:#7a6f64; font-size:11px;">${c.zone_livraison || ''}${c.moyen_paiement ? ' — ' + c.moyen_paiement : ''}</span></td>
+      <td>${esc(c.reference || '—')}<br><span style="color:#665b51; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
+      <td>${esc(c.client_nom)}<br><span style="color:#665b51;">${esc(c.client_telephone)}</span></td>
+      <td>${c.articles.length} article(s)<br><span style="color:#665b51; font-size:11px;">${esc(c.zone_livraison || '')}${c.moyen_paiement ? ' — ' + esc(c.moyen_paiement) : ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
       <td>${c.commission_gnf ? Number(c.commission_gnf).toLocaleString('fr-FR') + ' GNF' : '—'}</td>
       <td>
-        <select data-id="${c.id}" class="select-statut-commande">
+        <select data-id="${esc(c.id)}" class="select-statut-commande">
           <option ${c.statut==='En attente'?'selected':''}>En attente</option>
           <option ${c.statut==='Confirmée'?'selected':''}>Confirmée</option>
           <option ${c.statut==='Livrée'?'selected':''}>Livrée</option>
           <option ${c.statut==='Annulée'?'selected':''}>Annulée</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${c.id}" data-action="contacter-commande">Contacter</button></td>
+      <td><button class="admin-action-btn" data-id="${esc(c.id)}" data-action="contacter-commande">Contacter</button></td>
     </tr>
   `).join('');
 
@@ -289,20 +291,20 @@ async function chargerRendezVousAdmin() {
 
   tbody.innerHTML = data.map(r => `
     <tr>
-      <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${r.heure_souhaitee || ''}</td>
-      <td>${r.client_nom}<br><span style="color:#7a6f64;">${r.client_telephone}</span></td>
-      <td>${r.type_vetement}${r.modele_ref ? `<br><span style="color:#7a6f64; font-size:11px;">Catalogue : ${r.modele_ref}</span>` : ''}${r.photo_modele_url ? `<br><a href="${r.photo_modele_url}" target="_blank" style="color:var(--terracotta-dark); font-size:11px;">Voir photo jointe</a>` : ''}</td>
-      <td>${r.mode}<br><span style="color:#7a6f64; font-size:11px;">${r.moyen_paiement || ''}</span></td>
-      <td><input type="number" class="input-devis" data-id="${r.id}" value="${r.devis_gnf || ''}" placeholder="Montant" style="width:110px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); font-size:12px;"></td>
+      <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${esc(r.heure_souhaitee || '')}</td>
+      <td>${esc(r.client_nom)}<br><span style="color:#665b51;">${esc(r.client_telephone)}</span></td>
+      <td>${esc(r.type_vetement)}${r.modele_ref ? `<br><span style="color:#665b51; font-size:11px;">Catalogue : ${esc(r.modele_ref)}</span>` : ''}${r.photo_modele_url ? `<br><a href="${urlSure(r.photo_modele_url)}" target="_blank" style="color:var(--terracotta-dark); font-size:11px;">Voir photo jointe</a>` : ''}</td>
+      <td>${esc(r.mode)}<br><span style="color:#665b51; font-size:11px;">${esc(r.moyen_paiement || '')}</span></td>
+      <td><input type="number" class="input-devis" data-id="${esc(r.id)}" value="${esc(r.devis_gnf || '')}" placeholder="Montant" style="width:110px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); font-size:12px;"></td>
       <td>
-        <select data-id="${r.id}" class="select-statut-rdv">
+        <select data-id="${esc(r.id)}" class="select-statut-rdv">
           <option ${r.statut==='Nouvelle demande'?'selected':''}>Nouvelle demande</option>
           <option ${r.statut==='Confirmé'?'selected':''}>Confirmé</option>
           <option ${r.statut==='Terminé'?'selected':''}>Terminé</option>
           <option ${r.statut==='Annulé'?'selected':''}>Annulé</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${r.id}" data-action="contacter-rdv">Contacter</button></td>
+      <td><button class="admin-action-btn" data-id="${esc(r.id)}" data-action="contacter-rdv">Contacter</button></td>
     </tr>
   `).join('');
 
@@ -366,8 +368,8 @@ async function chargerIndisponibilitesAdmin() {
     <tr>
       <td>${new Date(i.date_debut).toLocaleDateString('fr-FR')}</td>
       <td>${new Date(i.date_fin).toLocaleDateString('fr-FR')}</td>
-      <td>${i.motif || '—'}</td>
-      <td><button class="admin-action-btn" data-id="${i.id}" data-action="supprimer-indispo">Supprimer</button></td>
+      <td>${esc(i.motif || '—')}</td>
+      <td><button class="admin-action-btn" data-id="${esc(i.id)}" data-action="supprimer-indispo">Supprimer</button></td>
     </tr>
   `).join('');
 
@@ -388,18 +390,18 @@ async function chargerAvisAdmin() {
   tbody.innerHTML = data.map(a => `
     <tr>
       <td>${new Date(a.cree_le).toLocaleDateString('fr-FR')}</td>
-      <td>${a.type === 'commande' ? 'Commande' : 'Sur mesure'}${a.reference ? `<br><span style="color:#7a6f64; font-size:11px;">${a.reference}</span>` : ''}</td>
-      <td>${a.client_nom}</td>
-      <td>${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</td>
-      <td style="max-width:220px;">${a.commentaire || '—'}</td>
-      <td>${a.media_url ? `<a href="${a.media_url}" target="_blank" style="color:var(--terracotta-dark);">Voir</a>` : '—'}</td>
+      <td>${a.type === 'commande' ? 'Commande' : 'Sur mesure'}${a.reference ? `<br><span style="color:#665b51; font-size:11px;">${esc(a.reference)}</span>` : ''}</td>
+      <td>${esc(a.client_nom)}</td>
+      <td>${'★'.repeat(Math.max(0, Math.min(5, Number(a.note) || 0)))}${'☆'.repeat(5 - Math.max(0, Math.min(5, Number(a.note) || 0)))}</td>
+      <td style="max-width:220px;">${esc(a.commentaire || '—')}</td>
+      <td>${a.media_url ? `<a href="${urlSure(a.media_url)}" target="_blank" style="color:var(--terracotta-dark);">Voir</a>` : '—'}</td>
       <td>
-        <select data-id="${a.id}" class="select-visible-avis">
+        <select data-id="${esc(a.id)}" class="select-visible-avis">
           <option value="true" ${a.visible ? 'selected' : ''}>Visible</option>
           <option value="false" ${!a.visible ? 'selected' : ''}>Masqué</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${a.id}" data-action="supprimer-avis">Supprimer</button></td>
+      <td><button class="admin-action-btn" data-id="${esc(a.id)}" data-action="supprimer-avis">Supprimer</button></td>
     </tr>
   `).join('');
 
@@ -453,7 +455,7 @@ document.getElementById('form-nouveau-modele').addEventListener('submit', async 
   e.preventDefault();
   const boutonSubmit = document.getElementById('m-submit-btn');
   const statutEl = document.getElementById('m-image-statut');
-  const fichierImage = document.getElementById('m-image-file').files[0];
+  let fichierImage = document.getElementById('m-image-file').files[0];
   const fichierVideo = document.getElementById('m-video-file').files[0];
   const editId = document.getElementById('m-edit-id').value;
 
@@ -464,6 +466,8 @@ document.getElementById('form-nouveau-modele').addEventListener('submit', async 
   let videoUrl = document.getElementById('m-video').value || '';
 
   if (fichierImage) {
+    statutEl.textContent = 'Compression de la photo...';
+    fichierImage = await compresserImage(fichierImage);
     statutEl.textContent = 'Envoi de la photo...';
     const nomFichier = `modele-${Date.now()}-${fichierImage.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const { error: erreurUpload } = await supabaseClient.storage.from('produits').upload(nomFichier, fichierImage);
@@ -531,19 +535,19 @@ async function chargerModelesAdmin() {
 
   tbody.innerHTML = data.map(m => `
     <tr>
-      <td>${m.image_url ? `<img src="${m.image_url}" alt="">` : '—'}</td>
+      <td>${m.image_url ? `<img src="${urlSure(m.image_url)}" alt="">` : '—'}</td>
       <td style="font-family:var(--font-mono); font-size:11px;">${m.num ? `M-${String(m.num).padStart(4,'0')}` : '—'}</td>
-      <td>${m.nom}${m.video_url ? ' 🎥' : ''}</td>
-      <td>${m.categorie}</td>
+      <td>${esc(m.nom)}${m.video_url ? ' 🎥' : ''}</td>
+      <td>${esc(m.categorie)}</td>
       <td>
-        <select data-id="${m.id}" class="select-actif-modele">
+        <select data-id="${esc(m.id)}" class="select-actif-modele">
           <option value="true" ${m.actif ? 'selected' : ''}>Visible</option>
           <option value="false" ${!m.actif ? 'selected' : ''}>Masqué</option>
         </select>
       </td>
       <td style="white-space:nowrap;">
-        <button class="admin-action-btn" data-id="${m.id}" data-action="modifier-modele">Modifier</button>
-        <button class="admin-action-btn" data-id="${m.id}" data-action="supprimer-modele">Supprimer</button>
+        <button class="admin-action-btn" data-id="${esc(m.id)}" data-action="modifier-modele">Modifier</button>
+        <button class="admin-action-btn" data-id="${esc(m.id)}" data-action="supprimer-modele">Supprimer</button>
       </td>
     </tr>
   `).join('');
