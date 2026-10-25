@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Détail de la commande — Style Ivoirien</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +21,7 @@
   <div class="header-inner">
     <a href="index.html" class="logo">
       <span class="logo-mark">
-        <img src="img/logo.png" alt="Style Ivoirien">
+        <img src="img/logo.png" alt="Style Ivoirien" width="44" height="44">
       </span>
       <span class="logo-text">
         <span class="line1">Style Ivoirien</span>
@@ -40,15 +42,18 @@
 <footer>
   <div class="footer-bottom" style="max-width:1100px; margin:0 auto; padding:24px;">
     <span>© 2026 Style Ivoirien</span>
+    <span class="footer-legal"><a href="mentions-legales.html" class="admin-link">Mentions légales &amp; CGV</a>
+    <a href="confidentialite.html" class="admin-link">Confidentialité</a></span>
   </div>
 </footer>
+<script src="js/securite.js"></script>
 <script>
   const TAUX_EUR = 10100; // GNF pour 1 euro — garder synchronisé avec js/main.js
   const params = new URLSearchParams(window.location.search);
   const brut = params.get('d');
   const conteneur = document.getElementById('commande-contenu');
   if (!brut) {
-    conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Aucune commande à afficher.</p>';
+    conteneur.innerHTML = '<p style="text-align:center; color:#665b51;">Aucune commande à afficher.</p>';
   } else {
     try {
       const commande = JSON.parse(brut);
@@ -58,11 +63,11 @@
       const lignesArticles = commande.articles.map(item => `
         <div class="panier-item">
           <div class="panier-item-image">
-            ${item.image_url ? `<img src="${item.image_url}" alt="${item.nom}">` : ''}
+            ${item.image_url ? `<img src="${urlSure(item.image_url)}" alt="${esc(item.nom)}">` : ''}
           </div>
           <div class="panier-item-info">
-            <span class="panier-item-nom">${item.nom}${item.taille ? ` — Taille ${item.taille}` : ''}</span>
-            <span class="panier-item-prix">${item.qty} x ${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
+            <span class="panier-item-nom">${esc(item.nom)}${item.taille ? ` — Taille ${esc(item.taille)}` : ''}</span>
+            <span class="panier-item-prix">${esc(item.qty)} x ${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
           </div>
         </div>
       `).join('');
@@ -90,17 +95,17 @@
       `;
 
       conteneur.innerHTML = `
-        <p style="color:#7a6f64; margin-bottom:20px;">Reçue le ${dateFormatee}</p>
+        <p style="color:#665b51; margin-bottom:20px;">Reçue le ${dateFormatee}</p>
         <div style="border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:20px;">
-          <p><strong>Client :</strong> ${commande.nom}</p>
-          <p><strong>Téléphone :</strong> ${commande.telephone}</p>
-          <p><strong>Zone :</strong> ${commande.zone || '—'}</p>
+          <p><strong>Client :</strong> ${esc(commande.nom)}</p>
+          <p><strong>Téléphone :</strong> ${esc(commande.telephone)}</p>
+          <p><strong>Zone :</strong> ${esc(commande.zone || '—')}</p>
         </div>
         ${lignesArticles}
         ${recapHtml}
       `;
     } catch (e) {
-      conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Impossible d\'afficher cette commande.</p>';
+      conteneur.innerHTML = '<p style="text-align:center; color:#665b51;">Impossible d\'afficher cette commande.</p>';
     }
   }
 </script>

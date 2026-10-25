@@ -26,9 +26,9 @@ function afficherModelesChoisis() {
   box.style.display = 'block';
   conteneur.innerHTML = liste.map(m => `
     <div class="modele-choisi-box">
-      ${m.image_url ? `<img src="${m.image_url}" alt="${m.nom}">` : ''}
-      <div><p style="margin:0; font-family:var(--font-display); font-size:15px;">${m.nom}</p></div>
-      <button type="button" class="admin-action-btn" data-retirer="${m.id}">Retirer</button>
+      ${m.image_url ? `<img src="${urlSure(m.image_url)}" alt="${esc(m.nom)}">` : ''}
+      <div><p style="margin:0; font-family:var(--font-display); font-size:15px;">${esc(m.nom)}</p></div>
+      <button type="button" class="admin-action-btn" data-retirer="${esc(m.id)}">Retirer</button>
     </div>
   `).join('');
 
@@ -183,13 +183,24 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     alert('Merci de choisir une date dans le calendrier.');
     return;
   }
+  if (estRobot(e.target)) return; // robot détecté : on ignore silencieusement
+  {
+    const indSel = document.getElementById('sm-indicatif').value;
+    const ind = indSel === 'autre' ? document.getElementById('sm-indicatif-autre').value.replace(/[^0-9]/g, '') : indSel;
+    const num = document.getElementById('sm-telephone').value.trim().replace(/^0+/, '').replace(/[^0-9]/g, '');
+    if (!telephoneValide(ind + num)) {
+      alert('Ce numéro de téléphone ne semble pas valide. Vérifiez-le (sans le 0 initial).');
+      return;
+    }
+  }
 
   const boutonSubmitSM = e.target.querySelector('button[type="submit"]');
-  const fichierPhotoModele = document.getElementById('sm-photo-modele').files[0];
+  let fichierPhotoModele = document.getElementById('sm-photo-modele').files[0];
   const statutPhotoEl = document.getElementById('sm-photo-statut');
   let photoModeleUrl = '';
 
   if (fichierPhotoModele) {
+    fichierPhotoModele = await compresserImage(fichierPhotoModele);
     boutonSubmitSM.disabled = true;
     statutPhotoEl.textContent = 'Envoi de la photo...';
     const nomFichier = `${Date.now()}-${fichierPhotoModele.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -280,3 +291,6 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 });
 
 chargerIndisponibilites();
+
+
+marquerOuvertureFormulaire(document.getElementById('form-sur-mesure'));

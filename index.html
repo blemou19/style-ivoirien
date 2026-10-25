@@ -3,12 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Style Ivoirien — Couture &amp; prêt-à-porter africain</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>Style Ivoirien — Mode africaine &amp; couture sur mesure</title>
+<link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<meta name="description" content="Boutique de mode africaine et couture sur mesure en pagne : achetez des pièces authentiques ou faites confectionner votre modèle. Livraison en Afrique et en Europe.">
+<link rel="canonical" href="https://styleivoirien.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Style Ivoirien">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Style Ivoirien — Mode africaine &amp; couture sur mesure">
+<meta property="og:description" content="Boutique de mode africaine et couture sur mesure en pagne : achetez des pièces authentiques ou faites confectionner votre modèle. Livraison en Afrique et en Europe.">
+<meta property="og:url" content="https://styleivoirien.com/">
+<meta property="og:image" content="https://styleivoirien.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,7 +33,7 @@
   <div class="header-inner">
     <a href="#accueil" class="logo">
       <span class="logo-mark">
-        <img src="img/logo.png" alt="Style Ivoirien">
+        <img src="img/logo.png" alt="Style Ivoirien" width="44" height="44">
       </span>
       <span class="logo-text">
         <span class="line1">Style Ivoirien</span>
@@ -65,8 +78,7 @@
       </p>
       <div class="hero-ctas">
         <a href="boutique.html" class="btn btn-primary">Voir la boutique</a>
-        <a href="catalogue.html" class="btn btn-outline">Parcourir le catalogue</a>
-        <a href="rendez-vous.html" class="btn btn-outline">Demander une création</a>
+        <a href="rendez-vous.html" class="btn btn-outline">Créer sur mesure</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -95,7 +107,7 @@
       <p>Un aperçu de nos dernières pièces.</p>
     </div>
     <div id="grille-apercu" class="produits-grid">
-      <p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Chargement des produits...</p>
+      <p style="grid-column:1/-1; text-align:center; color:#665b51;">Chargement des produits...</p>
     </div>
     <div class="voir-plus-wrap">
       <a href="boutique.html" class="btn btn-primary">Voir toute la boutique</a>
@@ -135,7 +147,7 @@
       <p id="avis-moyenne-affichage"></p>
     </div>
     <div id="liste-avis" class="liste-avis">
-      <p style="text-align:center; color:#7a6f64;">Chargement des avis...</p>
+      <p style="text-align:center; color:#665b51;">Chargement des avis...</p>
     </div>
     <div class="voir-plus-wrap">
       <a href="avis.html" class="btn btn-outline">Laisser un avis</a>
@@ -158,16 +170,19 @@
     </div>
     <div class="footer-links">
       <h4>Contact</h4>
-      <a href="https://wa.me/224626321860" target="_blank">WhatsApp : +224 62 63 21 860</a>
+      <a href="https://wa.me/224626321860" target="_blank" rel="noopener">WhatsApp : +224 62 63 21 860</a>
     </div>
   </div>
   <div class="footer-bottom">
     <span>© 2026 Style Ivoirien — tous droits réservés</span>
-    <a href="admin.html" class="admin-link">Espace pro</a>
+    <span class="footer-legal"><a href="mentions-legales.html" class="admin-link">Mentions légales &amp; CGV</a>
+    <a href="confidentialite.html" class="admin-link">Confidentialité</a>
+    <a href="admin.html" class="admin-link">Espace pro</a></span>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/securite.js"></script>
 <script src="js/main.js"></script>
 <script>
   let produitsApercu = [];
@@ -184,22 +199,22 @@
       .limit(4);
 
     if (error || !data || data.length === 0) {
-      conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun produit pour le moment.</p>';
+      conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Aucun produit pour le moment.</p>';
       return;
     }
 
     produitsApercu = data;
 
     conteneur.innerHTML = data.map(p => `
-      <div class="produit-card" data-id="${p.id}">
+      <div class="produit-card" data-id="${esc(p.id)}">
         <div class="produit-image">
-          ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
+          ${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}" loading="lazy" decoding="async">` : 'Photo à venir'}
         </div>
         <div class="produit-info">
-          <span class="produit-categorie">${p.categorie}</span>
-          <h3 class="produit-nom">${p.nom}</h3>
+          <span class="produit-categorie">${esc(p.categorie)}</span>
+          <h3 class="produit-nom">${esc(p.nom)}</h3>
           <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-          <button class="btn-ajouter" data-id="${p.id}">Ajouter au panier</button>
+          <button class="btn-ajouter" data-id="${esc(p.id)}">Ajouter au panier</button>
         </div>
       </div>
     `).join('');
@@ -213,7 +228,7 @@
     apercuQty = 1;
     apercuTailleChoisie = '';
     document.getElementById('modal-qty-valeur').textContent = '1';
-    document.getElementById('modal-media').innerHTML = p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : '';
+    document.getElementById('modal-media').innerHTML = p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}">` : '';
     document.getElementById('modal-categorie').textContent = p.categorie;
     document.getElementById('modal-nom').textContent = p.nom;
     document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
@@ -225,7 +240,7 @@
       const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
       apercuTailleChoisie = listeTailles[0] || '';
       taillesEl.innerHTML = listeTailles.map((t, i) =>
-        `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${t}">${t}</span>`
+        `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${esc(t)}">${esc(t)}</span>`
       ).join('');
       altEl.style.display = 'block';
       document.getElementById('modal-lien-sur-mesure').onclick = (e) => {
@@ -298,7 +313,7 @@
     const moyenneEl = document.getElementById('avis-moyenne-affichage');
 
     if (error || !data || data.length === 0) {
-      conteneur.innerHTML = '<p style="text-align:center; color:#7a6f64;">Pas encore d\'avis publiés.</p>';
+      conteneur.innerHTML = '<p style="text-align:center; color:#665b51;">Pas encore d\'avis publiés.</p>';
       moyenneEl.textContent = '';
       return;
     }
@@ -310,12 +325,12 @@
       <div class="avis-carte">
         ${a.media_url ? (
           a.media_url.match(/\.(mp4|mov|webm)$/i)
-            ? `<video src="${a.media_url}" controls class="avis-media"></video>`
-            : `<img src="${a.media_url}" alt="Photo client" class="avis-media">`
+            ? `<video src="${urlSure(a.media_url)}" controls preload="metadata" class="avis-media"></video>`
+            : `<img src="${urlSure(a.media_url)}" alt="Photo client" class="avis-media" loading="lazy" decoding="async">`
         ) : ''}
-        <div class="avis-etoiles-affichage">${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)}</div>
-        <p class="avis-commentaire">${a.commentaire || ''}</p>
-        <span class="avis-auteur">— ${a.client_nom}</span>
+        <div class="avis-etoiles-affichage">${'★'.repeat(Math.max(0, Math.min(5, Number(a.note) || 0)))}${'☆'.repeat(5 - Math.max(0, Math.min(5, Number(a.note) || 0)))}</div>
+        <p class="avis-commentaire">${esc(a.commentaire || '')}</p>
+        <span class="avis-auteur">— ${esc(a.client_nom)}</span>
       </div>
     `).join('');
   }

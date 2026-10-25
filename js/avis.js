@@ -3,12 +3,13 @@ const typeParam = params.get('type');
 const refParam = params.get('ref');
 const nomParam = params.get('nom');
 
-if (typeParam) {
+if (typeParam === 'commande' || typeParam === 'rendez_vous') {
   const radio = document.querySelector(`input[name="avis-type"][value="${typeParam}"]`);
   if (radio) radio.checked = true;
 }
+marquerOuvertureFormulaire(document.getElementById('form-avis'));
 if (nomParam) {
-  document.getElementById('avis-nom').value = decodeURIComponent(nomParam);
+  document.getElementById('avis-nom').value = nomParam.slice(0, 80);
 }
 
 let noteChoisie = 0;
@@ -31,10 +32,21 @@ document.getElementById('form-avis').addEventListener('submit', async (e) => {
     return;
   }
 
+  if (estRobot(e.target)) return; // robot détecté : on ignore silencieusement
+
   const nom = document.getElementById('avis-nom').value.trim();
+  if (nom.length < 2) {
+    messageEl.textContent = 'Merci d\'indiquer votre nom.';
+    return;
+  }
   const type = document.querySelector('input[name="avis-type"]:checked').value;
   const commentaire = document.getElementById('avis-commentaire').value.trim();
-  const fichierMedia = document.getElementById('avis-media').files[0];
+  let fichierMedia = document.getElementById('avis-media').files[0];
+  if (videoTropLourde(fichierMedia)) {
+    messageEl.textContent = `Vidéo trop lourde (max ${TAILLE_MAX_VIDEO_MO} Mo). Essayez une vidéo plus courte.`;
+    return;
+  }
+  fichierMedia = await compresserImage(fichierMedia);
 
   boutonSubmit.disabled = true;
   boutonSubmit.textContent = 'Envoi en cours...';

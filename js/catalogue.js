@@ -81,15 +81,15 @@ document.getElementById('recherche-modeles').addEventListener('input', (e) => {
 function carteModeleHtml(m) {
   const selectionne = estSelectionne(m.id);
   return `
-    <div class="produit-card" data-id="${m.id}">
+    <div class="produit-card" data-id="${esc(m.id)}">
       <div class="produit-image">
-        ${m.image_url ? `<img src="${m.image_url}" alt="${m.nom}">` : 'Photo à venir'}
+        ${m.image_url ? `<img src="${urlSure(m.image_url)}" alt="${esc(m.nom)}" loading="lazy" decoding="async">` : 'Photo à venir'}
         ${m.video_url ? '<span class="badge-video">🎥 Vidéo</span>' : ''}
       </div>
       <div class="produit-info">
-        <span class="produit-categorie">${m.categorie}</span>
-        <h3 class="produit-nom">${m.nom}</h3>
-        <button class="btn-ajouter ${selectionne ? 'selectionne' : ''}" data-action="toggle-selection" data-id="${m.id}">${selectionne ? '✓ Sélectionné' : 'Sélectionner'}</button>
+        <span class="produit-categorie">${esc(m.categorie)}</span>
+        <h3 class="produit-nom">${esc(m.nom)}</h3>
+        <button class="btn-ajouter ${selectionne ? 'selectionne' : ''}" data-action="toggle-selection" data-id="${esc(m.id)}">${selectionne ? '✓ Sélectionné' : 'Sélectionner'}</button>
       </div>
     </div>
   `;
@@ -116,13 +116,13 @@ async function chargerModeles() {
   const { data, error } = await requete;
 
   if (error) {
-    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Impossible de charger le catalogue.</p>';
+    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Impossible de charger le catalogue.</p>';
     boutonVoirPlus.style.display = 'none';
     return;
   }
 
   if (offset === 0 && data.length === 0) {
-    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun modèle trouvé.</p>';
+    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Aucun modèle trouvé.</p>';
     boutonVoirPlus.style.display = 'none';
     return;
   }
@@ -143,9 +143,9 @@ function ouvrirDetailModele(id) {
 
   const media = document.getElementById('modal-media');
   if (m.video_url) {
-    media.innerHTML = `<video src="${m.video_url}" controls playsinline ${m.image_url ? `poster="${m.image_url}"` : ''}></video>`;
+    media.innerHTML = `<video src="${urlSure(m.video_url)}" controls playsinline preload="metadata" ${m.image_url ? `poster="${urlSure(m.image_url)}"` : ''}></video>`;
   } else if (m.image_url) {
-    media.innerHTML = `<img src="${m.image_url}" alt="${m.nom}">`;
+    media.innerHTML = `<img src="${urlSure(m.image_url)}" alt="${esc(m.nom)}">`;
   } else {
     media.innerHTML = '';
   }

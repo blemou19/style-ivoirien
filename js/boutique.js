@@ -63,17 +63,17 @@ function carteProduitHtml(p) {
     id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', stock: p.stock ?? null
   }));
   return `
-    <div class="produit-card" data-id="${p.id}">
+    <div class="produit-card" data-id="${esc(p.id)}">
       <div class="produit-image">
-        ${p.image_url ? `<img src="${p.image_url}" alt="${p.nom}">` : 'Photo à venir'}
+        ${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}" loading="lazy" decoding="async">` : 'Photo à venir'}
         ${p.video_url ? '<span class="badge-video">🎥 Vidéo</span>' : ''}
         ${epuise ? '<span class="badge-epuise">Épuisé</span>' : ''}
       </div>
       <div class="produit-info">
-        <span class="produit-categorie">${p.categorie}</span>
-        <h3 class="produit-nom">${p.nom}</h3>
+        <span class="produit-categorie">${esc(p.categorie)}</span>
+        <h3 class="produit-nom">${esc(p.nom)}</h3>
         <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
-        <button class="btn-ajouter" data-produit="${produitData}" data-id="${p.id}" ${epuise ? 'disabled' : ''}>${epuise ? 'Épuisé' : 'Ajouter au panier'}</button>
+        <button class="btn-ajouter" data-produit="${produitData}" data-id="${esc(p.id)}" ${epuise ? 'disabled' : ''}>${epuise ? 'Épuisé' : 'Ajouter au panier'}</button>
       </div>
     </div>
   `;
@@ -96,13 +96,13 @@ async function chargerProduits() {
   const { data, error } = await requete;
 
   if (error) {
-    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Impossible de charger les produits pour le moment.</p>';
+    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Impossible de charger les produits pour le moment.</p>';
     boutonVoirPlus.style.display = 'none';
     return;
   }
 
   if (offset === 0 && data.length === 0) {
-    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Aucun produit trouvé.</p>';
+    conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Aucun produit trouvé.</p>';
     boutonVoirPlus.style.display = 'none';
     return;
   }
@@ -130,9 +130,9 @@ function ouvrirDetailProduit(id) {
 
   const media = document.getElementById('modal-media');
   if (p.video_url) {
-    media.innerHTML = `<video src="${p.video_url}" controls playsinline ${p.image_url ? `poster="${p.image_url}"` : ''}></video>`;
+    media.innerHTML = `<video src="${urlSure(p.video_url)}" controls playsinline preload="metadata" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''}></video>`;
   } else if (p.image_url) {
-    media.innerHTML = `<img src="${p.image_url}" alt="${p.nom}">`;
+    media.innerHTML = `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}">`;
   } else {
     media.innerHTML = '';
   }
@@ -161,7 +161,7 @@ function ouvrirDetailProduit(id) {
     const listeTailles = p.tailles.split(',').map(t => t.trim()).filter(Boolean);
     modalTailleChoisie = listeTailles[0] || '';
     taillesEl.innerHTML = listeTailles.map((t, i) =>
-      `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${t}">${t}</span>`
+      `<span class="${i === 0 ? 'taille-active' : ''}" data-taille="${esc(t)}">${esc(t)}</span>`
     ).join('');
     altEl.style.display = 'block';
     document.getElementById('modal-lien-sur-mesure').onclick = (e) => {

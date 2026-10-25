@@ -117,7 +117,8 @@ function creerPanierDrawer() {
         <span>Total</span>
         <span id="panier-total-montant">0 GNF</span>
       </div>
-      <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input">
+      <input type="text" id="panier-nom" placeholder="Votre nom" class="panier-input" maxlength="80" autocomplete="name">
+      <input type="text" name="site_web" id="panier-piege" class="champ-piege" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div style="display:flex; gap:8px; margin-bottom:10px;">
         <select id="panier-indicatif" class="panier-input" style="flex:0 0 130px; margin-bottom:0;">
           <option value="224">🇬🇳 Guinée +224</option>
@@ -130,7 +131,7 @@ function creerPanierDrawer() {
           <option value="33">🇫🇷 France +33</option>
           <option value="autre">🌍 Autre pays</option>
         </select>
-        <input type="tel" id="panier-telephone" placeholder="Numéro (ex: 622334455)" class="panier-input" style="margin-bottom:0; flex:1;">
+        <input type="tel" id="panier-telephone" placeholder="Numéro (ex: 622334455)" class="panier-input" maxlength="20" inputmode="tel" autocomplete="tel-national" style="margin-bottom:0; flex:1;">
       </div>
       <input type="text" id="panier-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" class="panier-input" style="display:none;">
       <select id="panier-zone" class="panier-input">
@@ -159,7 +160,7 @@ function creerPanierDrawer() {
         <p id="panier-recap-note" class="panier-recap-note" style="display:none;">⚠️ Ce montant ne couvre pas la livraison. Les frais d'expédition (environ 12€/kg, soit ≈ 121 200 GNF/kg) seront communiqués séparément une fois votre colis prêt et pesé.</p>
       </div>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
-      <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien.</p>
+      <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien. En commandant, vous acceptez nos <a href="mentions-legales.html#cgv">conditions de vente</a> et notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
     </div>
   `;
 
@@ -238,18 +239,18 @@ function afficherPanier() {
     conteneur.innerHTML = panier.map(item => `
       <div class="panier-item">
         <div class="panier-item-image">
-          ${item.image_url ? `<img src="${item.image_url}" alt="${item.nom}">` : ''}
+          ${item.image_url ? `<img src="${urlSure(item.image_url)}" alt="${esc(item.nom)}">` : ''}
         </div>
         <div class="panier-item-info">
-          <span class="panier-item-nom">${item.nom}${item.taille ? ` — Taille ${item.taille}` : ''}</span>
+          <span class="panier-item-nom">${esc(item.nom)}${item.taille ? ` — Taille ${esc(item.taille)}` : ''}</span>
           <span class="panier-item-prix">${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
           <div class="panier-item-qty">
-            <button data-action="moins" data-id="${item.id}" data-taille="${item.taille || ''}">−</button>
-            <span>${item.qty}</span>
-            <button data-action="plus" data-id="${item.id}" data-taille="${item.taille || ''}">+</button>
+            <button data-action="moins" data-id="${esc(item.id)}" data-taille="${esc(item.taille || '')}">−</button>
+            <span>${esc(item.qty)}</span>
+            <button data-action="plus" data-id="${esc(item.id)}" data-taille="${esc(item.taille || '')}">+</button>
           </div>
         </div>
-        <button class="panier-item-supprimer" data-action="supprimer" data-id="${item.id}" data-taille="${item.taille || ''}">Retirer</button>
+        <button class="panier-item-supprimer" data-action="supprimer" data-id="${esc(item.id)}" data-taille="${esc(item.taille || '')}">Retirer</button>
       </div>
     `).join('');
   }
@@ -296,6 +297,12 @@ async function envoyerCommande() {
     alert('Merci de renseigner votre nom et votre numéro de téléphone.');
     return;
   }
+  if (!telephoneValide(telephone)) {
+    alert('Ce numéro de téléphone ne semble pas valide. Vérifiez-le (sans le 0 initial).');
+    return;
+  }
+  const piege = document.getElementById('panier-piege');
+  if (piege && piege.value) return; // robot détecté : on ignore silencieusement
 
   const total = calculerTotal(panier);
   const reference = genererReference();

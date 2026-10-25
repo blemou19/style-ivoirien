@@ -4,11 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boutique — Style Ivoirien</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<meta name="description" content="Vêtements et accessoires africains authentiques, prêts à porter. Commandez en ligne via WhatsApp, livraison en Afrique et en Europe.">
+<link rel="canonical" href="https://styleivoirien.com/boutique.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Style Ivoirien">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Boutique — Style Ivoirien">
+<meta property="og:description" content="Vêtements et accessoires africains authentiques, prêts à porter. Commandez en ligne via WhatsApp, livraison en Afrique et en Europe.">
+<meta property="og:url" content="https://styleivoirien.com/boutique.html">
+<meta property="og:image" content="https://styleivoirien.com/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <meta name="theme-color" content="#B85C38">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,7 +32,7 @@
   <div class="header-inner">
     <a href="index.html" class="logo">
       <span class="logo-mark">
-        <img src="img/logo.png" alt="Style Ivoirien">
+        <img src="img/logo.png" alt="Style Ivoirien" width="44" height="44">
       </span>
       <span class="logo-text">
         <span class="line1">Style Ivoirien</span>
@@ -52,7 +65,7 @@
     <input type="search" id="recherche-produits" class="recherche-produits" placeholder="Rechercher un produit...">
     <div id="filtres-categories" class="filtres-categories"></div>
     <div id="grille-produits" class="produits-grid">
-      <p style="grid-column:1/-1; text-align:center; color:#7a6f64;">Chargement des produits...</p>
+      <p style="grid-column:1/-1; text-align:center; color:#665b51;">Chargement des produits...</p>
     </div>
     <div class="voir-plus-wrap">
       <button id="bouton-voir-plus" class="btn btn-outline" style="display:none;">Voir plus</button>
@@ -64,9 +77,9 @@
         <div class="produit-modal-info">
           <span id="modal-categorie" class="produit-categorie"></span>
           <h2 id="modal-nom"></h2>
-          <span id="modal-ref" style="font-family:var(--font-mono); font-size:11px; color:#7a6f64;"></span>
+          <span id="modal-ref" style="font-family:var(--font-mono); font-size:11px; color:#665b51;"></span>
           <span id="modal-prix" class="produit-modal-prix"></span>
-          <span id="modal-stock" style="font-size:12px; color:#7a6f64;"></span>
+          <span id="modal-stock" style="font-size:12px; color:#665b51;"></span>
           <p id="modal-desc" class="produit-modal-desc"></p>
           <div id="modal-tailles" class="produit-modal-tailles"></div>
           <p id="modal-taille-alternative" style="display:none; font-size:12px; margin:4px 0 0;">
@@ -98,15 +111,18 @@
     </div>
     <div class="footer-links">
       <h4>Contact</h4>
-      <a href="https://wa.me/224626321860" target="_blank">WhatsApp : +224 62 63 21 860</a>
+      <a href="https://wa.me/224626321860" target="_blank" rel="noopener">WhatsApp : +224 62 63 21 860</a>
     </div>
   </div>
   <div class="footer-bottom">
     <span>© 2026 Style Ivoirien — tous droits réservés</span>
-    <a href="admin.html" class="admin-link">Espace pro</a>
+    <span class="footer-legal"><a href="mentions-legales.html" class="admin-link">Mentions légales &amp; CGV</a>
+    <a href="confidentialite.html" class="admin-link">Confidentialité</a>
+    <a href="admin.html" class="admin-link">Espace pro</a></span>
   </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/securite.js"></script>
 <script src="js/main.js"></script>
 <script src="js/boutique.js"></script>
 </body>
