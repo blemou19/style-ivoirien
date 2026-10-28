@@ -97,6 +97,17 @@
   </div>
 </section>
 
+<section id="nouveautes" class="nouveautes" hidden>
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">À la une</p>
+      <h2>Nouveautés en vidéo</h2>
+      <p>Nos dernières pièces, comme sur TikTok. Touchez une vidéo pour voir le produit.</p>
+    </div>
+  </div>
+  <div id="nouveautes-rail" class="nouveautes-rail"></div>
+</section>
+
 <section id="boutique">
   <div class="wrap">
     <div class="section-head">
@@ -218,6 +229,78 @@
     `).join('');
   }
   chargerApercu();
+
+  // ===================== NOUVEAUTÉS EN VIDÉO =====================
+  async function chargerNouveautes() {
+    const { data, error } = await supabaseClient
+      .from('produits')
+      .select('*')
+      .eq('actif', true)
+      .not('video_url', 'is', null)
+      .neq('video_url', '')
+      .order('cree_le', { ascending: false })
+      .limit(10);
+    if (error || !data || data.length === 0) return; // pas de vidéo : la section reste cachée
+
+    data.forEach(p => { if (!produitsApercu.find(x => x.id === p.id)) produitsApercu.push(p); });
+
+    const rail = document.getElementById('nouveautes-rail');
+    rail.innerHTML = data.map(p => `
+      <article class="nouveaute" data-id="${esc(p.id)}" tabindex="0">
+        <video src="${urlSure(p.video_url)}" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''} muted loop playsinline preload="none"></video>
+        <button type="button" class="nouveaute-son" aria-label="Activer le son" data-son>🔇</button>
+        <div class="nouveaute-info">
+          <span class="nouveaute-nom">${esc(p.nom)}</span>
+          <span class="nouveaute-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+          <span class="nouveaute-cta">Voir le produit</span>
+        </div>
+      </article>
+    `).join('');
+    document.getElementById('nouveautes').hidden = false;
+
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const videos = [...rail.querySelectorAll('video')];
+    if ('IntersectionObserver' in window && !reduit) {
+      // ne lit que les vidéos visibles à l'écran : économise la data des clients
+      const obs = new IntersectionObserver(entrees => {
+        entrees.forEach(en => {
+          const v = en.target;
+          if (en.isIntersecting && en.intersectionRatio >= 0.6) { v.play().catch(() => {}); }
+          else { v.pause(); }
+        });
+      }, { threshold: [0, 0.6] });
+      videos.forEach(v => obs.observe(v));
+    } else {
+      videos.forEach(v => { v.preload = 'metadata'; });
+    }
+
+    function ouvrirCarte(carte) {
+      videos.forEach(x => x.pause());
+      ouvrirDetailApercu(carte.dataset.id);
+    }
+    rail.addEventListener('click', (e) => {
+      const btnSon = e.target.closest('[data-son]');
+      if (btnSon) {
+        e.stopPropagation();
+        const v = btnSon.parentElement.querySelector('video');
+        const activer = v.muted;
+        videos.forEach(x => { x.muted = true; });
+        rail.querySelectorAll('[data-son]').forEach(b => { b.textContent = '🔇'; b.setAttribute('aria-label', 'Activer le son'); });
+        if (activer) {
+          v.muted = false; v.play().catch(() => {});
+          btnSon.textContent = '🔊'; btnSon.setAttribute('aria-label', 'Couper le son');
+        }
+        return;
+      }
+      const carte = e.target.closest('.nouveaute');
+      if (carte) ouvrirCarte(carte);
+    });
+    rail.addEventListener('keydown', (e) => {
+      const carte = e.target.closest('.nouveaute');
+      if (carte && e.target === carte && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); ouvrirCarte(carte); }
+    });
+  }
+  chargerNouveautes();
 
   function ouvrirDetailApercu(id) {
     const p = produitsApercu.find(x => x.id === id);

@@ -122,6 +122,13 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     imageUrl = urlData.publicUrl;
   }
 
+  if (videoTropLourde(fichierVideo)) {
+    alert(`Vidéo trop lourde (max ${TAILLE_MAX_VIDEO_MO} Mo). Raccourcis-la ou réduis sa qualité avant de l'envoyer.`);
+    boutonSubmit.disabled = false;
+    boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
+    statutEl.textContent = '';
+    return;
+  }
   if (fichierVideo) {
     statutEl.textContent = 'Envoi de la vidéo...';
     const nomFichierVideo = `${Date.now()}-${fichierVideo.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -482,6 +489,13 @@ document.getElementById('form-nouveau-modele').addEventListener('submit', async 
     imageUrl = urlData.publicUrl;
   }
 
+  if (videoTropLourde(fichierVideo)) {
+    alert(`Vidéo trop lourde (max ${TAILLE_MAX_VIDEO_MO} Mo). Raccourcis-la ou réduis sa qualité avant de l'envoyer.`);
+    boutonSubmit.disabled = false;
+    boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le modèle';
+    statutEl.textContent = '';
+    return;
+  }
   if (fichierVideo) {
     statutEl.textContent = 'Envoi de la vidéo...';
     const nomFichierVideo = `modele-${Date.now()}-${fichierVideo.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
