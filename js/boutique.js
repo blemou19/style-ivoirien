@@ -67,6 +67,7 @@ function carteProduitHtml(p) {
       <div class="produit-image">
         ${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}" loading="lazy" decoding="async">` : 'Photo à venir'}
         ${p.video_url ? '<span class="badge-video">🎥 Vidéo</span>' : ''}
+        ${nombrePhotos(p) > 1 ? `<span class="badge-photos">${nombrePhotos(p)} photos</span>` : ''}
         ${epuise ? '<span class="badge-epuise">Épuisé</span>' : ''}
       </div>
       <div class="produit-info">
@@ -128,14 +129,7 @@ function ouvrirDetailProduit(id) {
   modalStockMax = (p.stock === null || p.stock === undefined) ? null : p.stock;
   document.getElementById('modal-qty-valeur').textContent = '1';
 
-  const media = document.getElementById('modal-media');
-  if (p.video_url) {
-    media.innerHTML = `<video src="${urlSure(p.video_url)}" controls playsinline preload="metadata" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''}></video>`;
-  } else if (p.image_url) {
-    media.innerHTML = `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}">`;
-  } else {
-    media.innerHTML = '';
-  }
+  afficherGalerie(document.getElementById('modal-media'), p);
 
   document.getElementById('modal-categorie').textContent = p.categorie;
   document.getElementById('modal-nom').textContent = p.nom;

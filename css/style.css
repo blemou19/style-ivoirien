@@ -711,7 +711,7 @@
   display:flex; align-items:center; justify-content:center;
 }
 .produit-modal-image{
-  background:var(--gold-soft); aspect-ratio:3/4;
+  background:#fff; min-width:0;
 }
 .produit-modal-image img{ width:100%; height:100%; object-fit:contain; background:#fff; }
 .produit-modal-info{ padding:28px; display:flex; flex-direction:column; gap:10px; }
@@ -916,3 +916,50 @@
 .admin-case{ display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:12px; cursor:pointer; }
 .admin-case input{ width:22px !important; height:22px; flex:none; margin:0; accent-color:var(--terracotta); }
 .admin-badge-une{ display:inline-block; font:600 10px var(--font-body); letter-spacing:.5px; text-transform:uppercase; background:var(--terracotta); color:#fff; padding:2px 6px; border-radius:4px; vertical-align:middle; }
+
+/* ===================== GALERIE PRODUIT ===================== */
+.galerie{ position:relative; background:#fff; }
+.galerie-piste{
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  aspect-ratio:3/4; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain;
+}
+.galerie-piste::-webkit-scrollbar{ display:none; }
+.galerie-piste:focus-visible{ outline:3px solid var(--gold); outline-offset:-3px; }
+.galerie-slide{ flex:0 0 100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; background:#fff; }
+.galerie-slide img, .galerie-slide video{ width:100%; height:100%; object-fit:contain; display:block; background:#fff; }
+.galerie-fleche{
+  position:absolute; top:50%; transform:translateY(-50%); width:38px; height:38px; border-radius:50%;
+  border:none; background:rgba(255,255,255,.9); box-shadow:0 2px 8px rgba(26,21,18,.18);
+  font-size:24px; line-height:1; cursor:pointer; color:var(--ink); display:flex; align-items:center; justify-content:center;
+}
+.galerie-prec{ left:10px; } .galerie-suiv{ right:10px; }
+@media (hover:none){ .galerie-fleche{ display:none; } }
+.galerie-compteur{
+  position:absolute; top:12px; left:12px; font:400 12px var(--font-mono); background:rgba(26,21,18,.7); color:#fff;
+  padding:4px 9px; border-radius:12px;
+}
+.galerie-points{ position:absolute; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
+.galerie-point{ width:8px; height:8px; border-radius:50%; border:none; padding:0; background:rgba(26,21,18,.25); cursor:pointer; }
+.galerie-point.actif{ background:var(--terracotta); width:20px; border-radius:4px; }
+.galerie-miniatures{ display:flex; gap:8px; padding:10px; overflow-x:auto; background:var(--cream-soft); scrollbar-width:thin; }
+.galerie-mini{
+  position:relative; flex:0 0 56px; height:74px; border:2px solid transparent; border-radius:8px; overflow:hidden;
+  padding:0; background:#fff; cursor:pointer;
+}
+.galerie-mini img{ width:100%; height:100%; object-fit:contain; }
+.galerie-mini.actif{ border-color:var(--terracotta); }
+.galerie-mini-video{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; background:rgba(26,21,18,.45); font-size:18px; }
+.badge-photos{
+  position:absolute; bottom:8px; right:8px; font:400 11px var(--font-mono); background:rgba(26,21,18,.72); color:#fff;
+  padding:3px 8px; border-radius:10px;
+}
+
+/* Admin : photos supplémentaires */
+.admin-galerie{ display:flex; flex-direction:column; gap:8px; }
+.admin-galerie-liste{ display:flex; flex-wrap:wrap; gap:10px; }
+.admin-galerie-item{ width:84px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#fff; }
+.admin-galerie-item img{ width:100%; height:110px; object-fit:contain; display:block; }
+.admin-galerie-actions{ display:flex; border-top:1px solid var(--line); }
+.admin-galerie-actions button{ flex:1; min-height:36px; border:none; background:var(--cream-soft); cursor:pointer; font-size:15px; }
+.admin-galerie-actions button + button{ border-left:1px solid var(--line); color:var(--terracotta-dark); }
+.admin-galerie-actions button:disabled{ opacity:.35; cursor:default; }
