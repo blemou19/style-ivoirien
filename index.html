@@ -236,6 +236,7 @@
       .from('produits')
       .select('*')
       .eq('actif', true)
+      .eq('a_la_une', true)
       .not('video_url', 'is', null)
       .neq('video_url', '')
       .order('cree_le', { ascending: false })
@@ -247,7 +248,7 @@
     const rail = document.getElementById('nouveautes-rail');
     rail.innerHTML = data.map(p => `
       <article class="nouveaute" data-id="${esc(p.id)}" tabindex="0">
-        <video src="${urlSure(p.video_url)}" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''} muted loop playsinline preload="none"></video>
+        <video src="${urlSure(p.video_url)}" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''} muted autoplay loop playsinline preload="none"></video>
         <button type="button" class="nouveaute-son" aria-label="Activer le son" data-son>🔇</button>
         <div class="nouveaute-info">
           <span class="nouveaute-nom">${esc(p.nom)}</span>
@@ -258,21 +259,25 @@
     `).join('');
     document.getElementById('nouveautes').hidden = false;
 
-    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const videos = [...rail.querySelectorAll('video')];
-    if ('IntersectionObserver' in window && !reduit) {
-      // ne lit que les vidéos visibles à l'écran : économise la data des clients
+    // lecture automatique, sans le son : chaque vidéo démarre dès qu'elle apparaît à l'écran
+    videos.forEach(v => { v.muted = true; v.defaultMuted = true; v.setAttribute('autoplay', ''); });
+    const lancer = v => { const p = v.play(); if (p) p.catch(() => {}); };
+    if ('IntersectionObserver' in window) {
       const obs = new IntersectionObserver(entrees => {
         entrees.forEach(en => {
           const v = en.target;
-          if (en.isIntersecting && en.intersectionRatio >= 0.6) { v.play().catch(() => {}); }
+          if (en.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; lancer(v); }
           else { v.pause(); }
         });
-      }, { threshold: [0, 0.6] });
+      }, { threshold: 0.25 });
       videos.forEach(v => obs.observe(v));
     } else {
-      videos.forEach(v => { v.preload = 'metadata'; });
+      videos.forEach(v => { v.preload = 'auto'; lancer(v); });
     }
+    // certains téléphones bloquent la lecture tant que la page n'a pas été touchée : on relance au premier contact
+    const relancer = () => { videos.forEach(v => { const r = v.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) lancer(v); }); };
+    ['touchstart', 'scroll', 'click'].forEach(ev => window.addEventListener(ev, relancer, { once: true, passive: true }));
 
     function ouvrirCarte(carte) {
       videos.forEach(x => x.pause());

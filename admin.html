@@ -59,10 +59,14 @@
       </label>
       <input type="hidden" id="p-image">
       <label class="full" style="font-size:13px; color:#665b51;">
-        Vidéo du produit (optionnel, 45 Mo max). Elle apparaît dans « Nouveautés en vidéo » sur l'accueil <span id="p-video-actuelle-label" style="color:var(--terracotta-dark);"></span>
+        Vidéo du produit (optionnel, 45 Mo max) <span id="p-video-actuelle-label" style="color:var(--terracotta-dark);"></span>
         <input type="file" id="p-video-file" accept="video/*" style="margin-top:6px;">
       </label>
       <input type="hidden" id="p-video">
+      <label class="full admin-case">
+        <input type="checkbox" id="p-a-la-une">
+        <span><strong>Mettre à la une</strong> : la vidéo de ce produit s'affiche en lecture automatique dans « Nouveautés en vidéo » sur l'accueil (il faut une vidéo)</span>
+      </label>
       <p id="p-image-statut" class="full" style="font-size:12px; color:#665b51; margin:0;"></p>
       <textarea id="p-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
       <div class="full" style="display:flex; gap:10px;">

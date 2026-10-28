@@ -912,3 +912,7 @@
   .admin-form-repliable{ scroll-margin-top:120px; }
   .admin-action-btn{ flex:1 1 auto; min-height:44px; font-size:14px; padding:10px 12px; border-radius:8px; }
 }
+
+.admin-case{ display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:12px; cursor:pointer; }
+.admin-case input{ width:22px !important; height:22px; flex:none; margin:0; accent-color:var(--terracotta); }
+.admin-badge-une{ display:inline-block; font:600 10px var(--font-body); letter-spacing:.5px; text-transform:uppercase; background:var(--terracotta); color:#fff; padding:2px 6px; border-radius:4px; vertical-align:middle; }

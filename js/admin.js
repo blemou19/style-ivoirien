@@ -66,6 +66,7 @@ function commencerEdition(id) {
   document.getElementById('p-prix').value = produit.prix;
   document.getElementById('p-tailles').value = produit.tailles || '';
   document.getElementById('p-stock').value = produit.stock ?? '';
+  document.getElementById('p-a-la-une').checked = !!produit.a_la_une;
   document.getElementById('p-description').value = produit.description || '';
   document.getElementById('p-image').value = produit.image_url || '';
   document.getElementById('p-video').value = produit.video_url || '';
@@ -144,6 +145,10 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 
   statutEl.textContent = '';
 
+  if (document.getElementById('p-a-la-une').checked && !videoUrl) {
+    alert("Pour mettre ce produit à la une, ajoute d'abord une vidéo.");
+  }
+
   const donneesProduit = {
     nom: document.getElementById('p-nom').value.trim(),
     categorie: document.getElementById('p-categorie').value.trim(),
@@ -153,6 +158,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     video_url: videoUrl,
     tailles: document.getElementById('p-tailles').value.trim(),
     stock: document.getElementById('p-stock').value === '' ? null : Number(document.getElementById('p-stock').value),
+    a_la_une: document.getElementById('p-a-la-une').checked && !!videoUrl,
   };
 
   let error;
@@ -185,7 +191,7 @@ async function chargerProduitsAdmin() {
     <tr>
       <td>${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="">` : '—'}</td>
       <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
-      <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}</td>
+      <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}${p.a_la_une ? ' <span class="admin-badge-une">À la une</span>' : ''}</td>
       <td>${esc(p.categorie)}</td>
       <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
       <td>${p.stock !== null && p.stock !== undefined ? p.stock : '∞'}</td>
