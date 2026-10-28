@@ -192,6 +192,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/securite.js"></script>
+<script src="js/galerie.js"></script>
 <script src="js/main.js"></script>
 <script>
   let produitsApercu = [];
@@ -218,6 +219,7 @@
       <div class="produit-card" data-id="${esc(p.id)}">
         <div class="produit-image">
           ${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}" loading="lazy" decoding="async">` : 'Photo à venir'}
+          ${nombrePhotos(p) > 1 ? `<span class="badge-photos">${nombrePhotos(p)} photos</span>` : ''}
         </div>
         <div class="produit-info">
           <span class="produit-categorie">${esc(p.categorie)}</span>
@@ -314,7 +316,7 @@
     apercuQty = 1;
     apercuTailleChoisie = '';
     document.getElementById('modal-qty-valeur').textContent = '1';
-    document.getElementById('modal-media').innerHTML = p.image_url ? `<img src="${urlSure(p.image_url)}" alt="${esc(p.nom)}">` : '';
+    afficherGalerie(document.getElementById('modal-media'), p);
     document.getElementById('modal-categorie').textContent = p.categorie;
     document.getElementById('modal-nom').textContent = p.nom;
     document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';

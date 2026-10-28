@@ -58,6 +58,13 @@
         <input type="file" id="p-image-file" accept="image/*" style="margin-top:6px;">
       </label>
       <input type="hidden" id="p-image">
+      <div class="full admin-galerie">
+        <label style="font-size:13px; color:#665b51;">
+          Autres photos (autres angles, détails, chaque pièce de l'ensemble). Tu peux en choisir plusieurs d'un coup.
+          <input type="file" id="p-images-file" accept="image/*" multiple style="margin-top:6px;">
+        </label>
+        <div id="p-images-liste" class="admin-galerie-liste"></div>
+      </div>
       <label class="full" style="font-size:13px; color:#665b51;">
         Vidéo du produit (optionnel, 45 Mo max) <span id="p-video-actuelle-label" style="color:var(--terracotta-dark);"></span>
         <input type="file" id="p-video-file" accept="video/*" style="margin-top:6px;">

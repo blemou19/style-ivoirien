@@ -67,6 +67,8 @@ function commencerEdition(id) {
   document.getElementById('p-tailles').value = produit.tailles || '';
   document.getElementById('p-stock').value = produit.stock ?? '';
   document.getElementById('p-a-la-une').checked = !!produit.a_la_une;
+  imagesSupplementaires = Array.isArray(produit.images) ? [...produit.images] : [];
+  afficherImagesSupplementaires();
   document.getElementById('p-description').value = produit.description || '';
   document.getElementById('p-image').value = produit.image_url || '';
   document.getElementById('p-video').value = produit.video_url || '';
@@ -86,6 +88,8 @@ function annulerEdition() {
   document.getElementById('p-video-actuelle-label').textContent = '';
   document.getElementById('p-submit-btn').textContent = 'Ajouter le produit';
   fermerFormulaire('form-nouveau-produit');
+  imagesSupplementaires = [];
+  afficherImagesSupplementaires();
 }
 
 document.getElementById('p-annuler-btn').addEventListener('click', annulerEdition);
@@ -119,6 +123,23 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     }
     const { data: urlData } = supabaseClient.storage.from('produits').getPublicUrl(nomFichier);
     imageUrl = urlData.publicUrl;
+  }
+
+  // photos supplémentaires (plusieurs angles)
+  const nouvellesPhotos = [...document.getElementById('p-images-file').files];
+  for (let k = 0; k < nouvellesPhotos.length; k++) {
+    statutEl.textContent = `Envoi des autres photos (${k + 1}/${nouvellesPhotos.length})...`;
+    const fichier = await compresserImage(nouvellesPhotos[k]);
+    const nom = `${Date.now()}-${k}-${fichier.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { error: errPhoto } = await supabaseClient.storage.from('produits').upload(nom, fichier);
+    if (errPhoto) {
+      alert("Erreur lors de l'envoi d'une photo : " + errPhoto.message);
+      boutonSubmit.disabled = false;
+      boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
+      statutEl.textContent = '';
+      return;
+    }
+    imagesSupplementaires.push(supabaseClient.storage.from('produits').getPublicUrl(nom).data.publicUrl);
   }
 
   if (videoTropLourde(fichierVideo)) {
@@ -159,6 +180,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     tailles: document.getElementById('p-tailles').value.trim(),
     stock: document.getElementById('p-stock').value === '' ? null : Number(document.getElementById('p-stock').value),
     a_la_une: document.getElementById('p-a-la-une').checked && !!videoUrl,
+    images: imagesSupplementaires,
   };
 
   let error;
@@ -191,7 +213,7 @@ async function chargerProduitsAdmin() {
     <tr>
       <td>${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="">` : '—'}</td>
       <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
-      <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}${p.a_la_une ? ' <span class="admin-badge-une">À la une</span>' : ''}</td>
+      <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}${p.a_la_une ? ' <span class="admin-badge-une">À la une</span>' : ''}${Array.isArray(p.images) && p.images.length ? ` <span style="font-size:11px; color:#665b51;">+${p.images.length} photo(s)</span>` : ''}</td>
       <td>${esc(p.categorie)}</td>
       <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
       <td>${p.stock !== null && p.stock !== undefined ? p.stock : '∞'}</td>
@@ -618,4 +640,28 @@ function etiqueterTableau(table) {
 document.querySelectorAll('.admin-table').forEach(table => {
   etiqueterTableau(table);
   new MutationObserver(() => etiqueterTableau(table)).observe(table.querySelector('tbody'), { childList: true });
+});
+
+
+// ===================== PHOTOS SUPPLÉMENTAIRES D'UN PRODUIT =====================
+let imagesSupplementaires = [];
+function afficherImagesSupplementaires() {
+  const liste = document.getElementById('p-images-liste');
+  liste.innerHTML = imagesSupplementaires.map((url, i) => `
+    <div class="admin-galerie-item">
+      <img src="${urlSure(url)}" alt="">
+      <div class="admin-galerie-actions">
+        <button type="button" data-gauche="${i}" aria-label="Déplacer vers la gauche" ${i === 0 ? 'disabled' : ''}>←</button>
+        <button type="button" data-retirer-photo="${i}" aria-label="Retirer cette photo">✕</button>
+      </div>
+    </div>`).join('');
+}
+document.getElementById('p-images-liste').addEventListener('click', (e) => {
+  const r = e.target.closest('[data-retirer-photo]');
+  if (r) { imagesSupplementaires.splice(Number(r.dataset.retirerPhoto), 1); afficherImagesSupplementaires(); return; }
+  const g = e.target.closest('[data-gauche]');
+  if (g) {
+    const i = Number(g.dataset.gauche);
+    if (i > 0) { [imagesSupplementaires[i - 1], imagesSupplementaires[i]] = [imagesSupplementaires[i], imagesSupplementaires[i - 1]]; afficherImagesSupplementaires(); }
+  }
 });
