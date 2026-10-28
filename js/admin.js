@@ -73,9 +73,7 @@ function commencerEdition(id) {
   document.getElementById('p-video-actuelle-label').textContent = produit.video_url ? '(une vidéo existe déjà, choisis-en une seulement si tu veux la remplacer)' : '';
 
   document.getElementById('p-submit-btn').textContent = 'Enregistrer les modifications';
-  document.getElementById('p-annuler-btn').style.display = 'inline-flex';
-
-  document.getElementById('form-nouveau-produit').scrollIntoView({ behavior: 'smooth' });
+  ouvrirFormulaire('form-nouveau-produit');
 }
 
 function annulerEdition() {
@@ -86,7 +84,7 @@ function annulerEdition() {
   document.getElementById('p-image-actuelle-label').textContent = '';
   document.getElementById('p-video-actuelle-label').textContent = '';
   document.getElementById('p-submit-btn').textContent = 'Ajouter le produit';
-  document.getElementById('p-annuler-btn').style.display = 'none';
+  fermerFormulaire('form-nouveau-produit');
 }
 
 document.getElementById('p-annuler-btn').addEventListener('click', annulerEdition);
@@ -442,8 +440,7 @@ function commencerEditionModele(id) {
   document.getElementById('m-image-actuelle-label').textContent = m.image_url ? '(une photo existe déjà)' : '';
   document.getElementById('m-video-actuelle-label').textContent = m.video_url ? '(une vidéo existe déjà)' : '';
   document.getElementById('m-submit-btn').textContent = 'Enregistrer les modifications';
-  document.getElementById('m-annuler-btn').style.display = 'inline-flex';
-  document.getElementById('form-nouveau-modele').scrollIntoView({ behavior: 'smooth' });
+  ouvrirFormulaire('form-nouveau-modele');
 }
 
 function annulerEditionModele() {
@@ -454,7 +451,7 @@ function annulerEditionModele() {
   document.getElementById('m-image-actuelle-label').textContent = '';
   document.getElementById('m-video-actuelle-label').textContent = '';
   document.getElementById('m-submit-btn').textContent = 'Ajouter le modèle';
-  document.getElementById('m-annuler-btn').style.display = 'none';
+  fermerFormulaire('form-nouveau-modele');
 }
 document.getElementById('m-annuler-btn').addEventListener('click', annulerEditionModele);
 
@@ -584,3 +581,35 @@ async function chargerModelesAdmin() {
 }
 
 verifierSession();
+
+
+// ===================== AFFICHAGE MOBILE =====================
+// Formulaires repliables : la liste passe en premier, le formulaire s'ouvre au besoin
+function ouvrirFormulaire(id) {
+  const form = document.getElementById(id);
+  form.classList.add('ouvert');
+  const btn = document.querySelector(`.admin-ouvrir-form[data-form="${id}"]`);
+  if (btn) btn.hidden = true;
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function fermerFormulaire(id) {
+  const form = document.getElementById(id);
+  form.classList.remove('ouvert');
+  const btn = document.querySelector(`.admin-ouvrir-form[data-form="${id}"]`);
+  if (btn) btn.hidden = false;
+}
+document.querySelectorAll('.admin-ouvrir-form').forEach(btn => {
+  btn.addEventListener('click', () => ouvrirFormulaire(btn.dataset.form));
+});
+
+// Sur téléphone, chaque ligne de tableau devient une carte : on recopie le titre de la colonne dans chaque case
+function etiqueterTableau(table) {
+  const titres = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    [...tr.children].forEach((td, i) => { if (titres[i]) td.setAttribute('data-label', titres[i]); else td.classList.add('admin-td-actions'); });
+  });
+}
+document.querySelectorAll('.admin-table').forEach(table => {
+  etiqueterTableau(table);
+  new MutationObserver(() => etiqueterTableau(table)).observe(table.querySelector('tbody'), { childList: true });
+});

@@ -31,7 +31,7 @@
 
 <div id="admin-shell" class="admin-shell">
   <div class="admin-topbar">
-    <h1>Style Ivoirien · Espace pro</h1>
+    <h1>Espace pro <span class="admin-topbar-marque">Style Ivoirien</span></h1>
     <button id="admin-deconnexion" class="admin-deconnexion">Se déconnecter</button>
   </div>
 
@@ -45,7 +45,8 @@
   </div>
 
   <div id="panel-produits" class="admin-panel actif">
-    <form id="form-nouveau-produit" class="admin-form">
+    <button type="button" class="admin-ouvrir-form" data-form="form-nouveau-produit">＋ Ajouter un produit</button>
+    <form id="form-nouveau-produit" class="admin-form admin-form-repliable">
       <input type="hidden" id="p-edit-id">
       <input type="text" id="p-nom" placeholder="Nom du produit" required>
       <input type="text" id="p-categorie" placeholder="Catégorie (ex: Robes)" required>
@@ -66,7 +67,7 @@
       <textarea id="p-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
       <div class="full" style="display:flex; gap:10px;">
         <button type="submit" id="p-submit-btn" class="btn btn-primary">Ajouter le produit</button>
-        <button type="button" id="p-annuler-btn" class="btn btn-outline" style="display:none;">Annuler la modification</button>
+        <button type="button" id="p-annuler-btn" class="btn btn-outline">Annuler</button>
       </div>
     </form>
     <table class="admin-table">
@@ -97,8 +98,8 @@
 
   <div id="panel-dispo" class="admin-panel">
     <form id="form-indispo" class="admin-form">
-      <input type="date" id="indispo-debut" required>
-      <input type="date" id="indispo-fin" required>
+      <label class="admin-champ">Du<input type="date" id="indispo-debut" required></label>
+      <label class="admin-champ">Au<input type="date" id="indispo-fin" required></label>
       <input type="text" id="indispo-motif" placeholder="Motif (optionnel, ex: voyage)" class="full">
       <button type="submit" class="btn btn-primary">Bloquer cette période</button>
     </form>
@@ -116,7 +117,8 @@
   </div>
 
   <div id="panel-catalogue" class="admin-panel">
-    <form id="form-nouveau-modele" class="admin-form">
+    <button type="button" class="admin-ouvrir-form" data-form="form-nouveau-modele">＋ Ajouter un modèle</button>
+    <form id="form-nouveau-modele" class="admin-form admin-form-repliable">
       <input type="hidden" id="m-edit-id">
       <input type="text" id="m-nom" placeholder="Nom du modèle" required>
       <input type="text" id="m-categorie" placeholder="Catégorie (ex: Robes)" required>
@@ -134,7 +136,7 @@
       <textarea id="m-description" placeholder="Description (optionnel)" class="full" rows="2"></textarea>
       <div class="full" style="display:flex; gap:10px;">
         <button type="submit" id="m-submit-btn" class="btn btn-primary">Ajouter le modèle</button>
-        <button type="button" id="m-annuler-btn" class="btn btn-outline" style="display:none;">Annuler la modification</button>
+        <button type="button" id="m-annuler-btn" class="btn btn-outline">Annuler</button>
       </div>
     </form>
     <table class="admin-table">
