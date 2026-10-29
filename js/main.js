@@ -21,6 +21,8 @@ mainNav.querySelectorAll('a').forEach(link => {
 const PANIER_KEY = 'style_ivoirien_panier';
 const NUMERO_WHATSAPP = '33744192080';
 const NUMERO_WHATSAPP_FRANCE = '33744192080';
+// Commission de service (3 % local, 10 % France) : désactivée pour l'instant. Remettre à true pour la réactiver.
+const COMMISSION_ACTIVE = false;
 const TAUX_EUR = 10100; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
 
 function genererReference() {
@@ -145,11 +147,11 @@ function creerPanierDrawer() {
         <option value="Espèces en boutique">Espèces en boutique</option>
       </select>
       <div id="panier-recap" class="panier-recap">
-        <div class="panier-recap-ligne">
+        <div class="panier-recap-ligne" id="recap-ligne-prix">
           <span>Prix du panier</span>
           <span id="recap-prix-panier">0 GNF</span>
         </div>
-        <div class="panier-recap-ligne">
+        <div class="panier-recap-ligne" id="recap-ligne-commission">
           <span id="recap-commission-label">Commission service</span>
           <span id="recap-commission">0 GNF</span>
         </div>
@@ -196,6 +198,7 @@ function majOptionsPaiement() {
 }
 
 function calculerCommission(zone, total) {
+  if (!COMMISSION_ACTIVE) return 0;
   return zone.startsWith('Livraison France') ? Math.round(total * 0.10) : Math.round(total * 0.03);
 }
 
@@ -216,6 +219,9 @@ function majRecap() {
     : commission.toLocaleString('fr-FR') + ' GNF';
   document.getElementById('recap-total').textContent = totalFinal.toLocaleString('fr-FR') + ' GNF' + (estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : '');
   document.getElementById('panier-recap-note').style.display = estFrance ? 'block' : 'none';
+  // sans commission, seul le total compte : on n'affiche pas les lignes de détail
+  document.getElementById('recap-ligne-prix').style.display = COMMISSION_ACTIVE ? '' : 'none';
+  document.getElementById('recap-ligne-commission').style.display = COMMISSION_ACTIVE ? '' : 'none';
 }
 
 function ouvrirPanier() {
@@ -318,7 +324,11 @@ async function envoyerCommande() {
     `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
   ).join('\n');
 
-  const recap = estFrance
+  const recap = !COMMISSION_ACTIVE
+    ? (estFrance
+      ? `\nTotal des articles : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nFrais de livraison : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué après pesée du colis\n`
+      : `\nTotal à payer : ${total.toLocaleString('fr-FR')} GNF\n`)
+    : estFrance
     ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\nFrais de livraison : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué après pesée du colis\n`
     : `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF\nCommission service : ${commission.toLocaleString('fr-FR')} GNF\nTotal à payer : ${totalFinal.toLocaleString('fr-FR')} GNF\n`;
 

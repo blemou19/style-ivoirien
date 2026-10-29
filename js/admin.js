@@ -336,6 +336,8 @@ async function chargerCommandesAdmin() {
 
   const commissionTotale = confirmees.reduce((s, c) => s + Number(c.commission_gnf || 0), 0);
   document.getElementById('stat-commission').textContent = commissionTotale.toLocaleString('fr-FR') + ' GNF';
+  // commission désactivée pour l'instant : la carte n'apparaît que s'il y en a eu
+  document.getElementById('stat-commission').closest('.admin-stat-card').style.display = commissionTotale === 0 ? 'none' : '';
 
   tbody.innerHTML = data.map(c => `
     <tr>
