@@ -84,17 +84,13 @@ async function chargerProduits() {
   const conteneur = document.getElementById('grille-produits');
   const boutonVoirPlus = document.getElementById('bouton-voir-plus');
 
-  let requete = supabaseClient
-    .from('produits')
-    .select('*')
-    .eq('actif', true)
-    .order('cree_le', { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1);
-
-  if (currentCategorie) requete = requete.eq('categorie', currentCategorie);
-  if (currentRecherche) requete = requete.ilike('nom', `%${currentRecherche}%`);
-
-  const { data, error } = await requete;
+  const { data, error } = await chargerProduitsTries(avecOrdre => {
+    let requete = trierProduits(supabaseClient.from('produits').select('*').eq('actif', true), avecOrdre)
+      .range(offset, offset + PAGE_SIZE - 1);
+    if (currentCategorie) requete = requete.eq('categorie', currentCategorie);
+    if (currentRecherche) requete = requete.ilike('nom', `%${currentRecherche}%`);
+    return requete;
+  });
 
   if (error) {
     conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Impossible de charger les produits pour le moment.</p>';

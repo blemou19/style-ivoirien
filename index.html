@@ -201,12 +201,8 @@
 
   async function chargerApercu() {
     const conteneur = document.getElementById('grille-apercu');
-    const { data, error } = await supabaseClient
-      .from('produits')
-      .select('*')
-      .eq('actif', true)
-      .order('cree_le', { ascending: false })
-      .limit(4);
+    const { data, error } = await chargerProduitsTries(avecOrdre =>
+      trierProduits(supabaseClient.from('produits').select('*').eq('actif', true), avecOrdre).limit(4));
 
     if (error || !data || data.length === 0) {
       conteneur.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#665b51;">Aucun produit pour le moment.</p>';
@@ -234,15 +230,9 @@
 
   // ===================== NOUVEAUTÉS EN VIDÉO =====================
   async function chargerNouveautes() {
-    const { data, error } = await supabaseClient
-      .from('produits')
-      .select('*')
-      .eq('actif', true)
-      .eq('a_la_une', true)
-      .not('video_url', 'is', null)
-      .neq('video_url', '')
-      .order('cree_le', { ascending: false })
-      .limit(10);
+    const { data, error } = await chargerProduitsTries(avecOrdre =>
+      trierProduits(supabaseClient.from('produits').select('*').eq('actif', true).eq('a_la_une', true)
+        .not('video_url', 'is', null).neq('video_url', ''), avecOrdre).limit(10));
     if (error || !data || data.length === 0) return; // pas de vidéo : la section reste cachée
 
     data.forEach(p => { if (!produitsApercu.find(x => x.id === p.id)) produitsApercu.push(p); });

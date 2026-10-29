@@ -963,3 +963,23 @@
 .admin-galerie-actions button{ flex:1; min-height:36px; border:none; background:var(--cream-soft); cursor:pointer; font-size:15px; }
 .admin-galerie-actions button + button{ border-left:1px solid var(--line); color:var(--terracotta-dark); }
 .admin-galerie-actions button:disabled{ opacity:.35; cursor:default; }
+
+/* ===================== ORDRE DES PRODUITS (admin) ===================== */
+.ordre-aide{ font-size:13px; color:#665b51; margin:14px 0 4px; }
+.ordre-statut{ font-size:13px; min-height:18px; margin:0 0 8px; color:#665b51; }
+.ordre-statut.ok{ color:#2e7d4f; }
+.ordre-statut.erreur{ color:#b3261e; }
+.poignee-glisser{
+  display:inline-flex; align-items:center; justify-content:center; width:36px; height:44px;
+  font-size:22px; color:#8a7d70; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; border-radius:8px;
+}
+.poignee-glisser:hover{ background:var(--cream-soft); color:var(--ink); }
+.ligne-glissee{ opacity:.85; background:#fff8ee; box-shadow:0 8px 24px rgba(26,21,18,.18); }
+.ligne-glissee .poignee-glisser{ cursor:grabbing; }
+.admin-td-glisser{ width:40px; }
+@media (max-width:700px){
+  .admin-table tr{ position:relative; }
+  .admin-table td.admin-td-glisser{ position:absolute; top:8px; right:8px; width:auto; z-index:1; }
+  .admin-table td.admin-td-glisser::before{ display:none; }
+  .poignee-glisser{ width:48px; height:48px; background:#fff; border:1px solid var(--line); }
+}

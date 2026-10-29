@@ -203,14 +203,18 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 });
 
 async function chargerProduitsAdmin() {
-  const { data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false });
+  let { data, error } = await supabaseClient.from('produits').select('*')
+    .order('ordre', { ascending: true, nullsFirst: true }).order('cree_le', { ascending: false });
+  ordreDisponible = !error;
+  if (error) ({ data, error } = await supabaseClient.from('produits').select('*').order('cree_le', { ascending: false }));
   const tbody = document.getElementById('tbody-produits');
   if (error || !data) { tbody.innerHTML = '<tr><td colspan="8">Erreur de chargement.</td></tr>'; return; }
 
   produitsCache = data;
 
   tbody.innerHTML = data.map(p => `
-    <tr>
+    <tr data-id="${esc(p.id)}">
+      <td class="admin-td-glisser"><span class="poignee-glisser" title="Glisser pour changer l'ordre" aria-label="Glisser pour changer l'ordre">⠿</span></td>
       <td>${p.image_url ? `<img src="${urlSure(p.image_url)}" alt="">` : '—'}</td>
       <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
       <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}${p.a_la_une ? ' <span class="admin-badge-une">À la une</span>' : ''}${Array.isArray(p.images) && p.images.length ? ` <span style="font-size:11px; color:#665b51;">+${p.images.length} photo(s)</span>` : ''}</td>
@@ -245,6 +249,73 @@ async function chargerProduitsAdmin() {
   document.querySelectorAll('[data-action="modifier-produit"]').forEach(btn => {
     btn.addEventListener('click', () => commencerEdition(btn.dataset.id));
   });
+  activerGlisser(tbody);
+}
+
+// ===================== ORDRE DES PRODUITS (glisser-déposer) =====================
+// On attrape un produit par sa poignée ⠿ et on le fait glisser : l'ordre est enregistré
+// dans la colonne "ordre" et le site affiche les produits dans cet ordre.
+let ordreDisponible = true;
+function activerGlisser(tbody) {
+  tbody.querySelectorAll('.poignee-glisser').forEach(poignee => {
+    poignee.addEventListener('pointerdown', e => {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      const ligne = poignee.closest('tr');
+      const ordreAvant = [...tbody.children].map(tr => tr.dataset.id).join(',');
+      ligne.classList.add('ligne-glissee');
+
+      const bouger = ev => {
+        const y = ev.clientY;
+        const autres = [...tbody.children].filter(tr => tr !== ligne);
+        let avant = null;
+        for (const tr of autres) {
+          const r = tr.getBoundingClientRect();
+          if (y < r.top + r.height / 2) { avant = tr; break; }
+        }
+        if (avant) { if (ligne.nextSibling !== avant) tbody.insertBefore(ligne, avant); }
+        else if (tbody.lastElementChild !== ligne) tbody.appendChild(ligne);
+        // défilement automatique près des bords de l'écran
+        if (y < 70) window.scrollBy(0, -12); else if (y > window.innerHeight - 70) window.scrollBy(0, 12);
+      };
+      const lacher = () => {
+        window.removeEventListener('pointermove', bouger);
+        window.removeEventListener('pointerup', lacher);
+        window.removeEventListener('pointercancel', lacher);
+        ligne.classList.remove('ligne-glissee');
+        const ids = [...tbody.children].map(tr => tr.dataset.id);
+        if (ids.join(',') !== ordreAvant) enregistrerOrdre(ids);
+      };
+      // écoute sur toute la fenêtre : la ligne change de place dans le tableau pendant le glisser
+      window.addEventListener('pointermove', bouger);
+      window.addEventListener('pointerup', lacher);
+      window.addEventListener('pointercancel', lacher);
+    });
+  });
+}
+
+async function enregistrerOrdre(ids) {
+  const statut = document.getElementById('ordre-statut');
+  if (!ordreDisponible) {
+    statut.textContent = "Impossible d'enregistrer l'ordre : la colonne « ordre » n'existe pas encore dans la base.";
+    statut.className = 'ordre-statut erreur';
+    return;
+  }
+  statut.textContent = "Enregistrement de l'ordre…";
+  statut.className = 'ordre-statut';
+  const aChanger = ids.map((id, i) => ({ id, ordre: i + 1 }))
+    .filter(({ id, ordre }) => { const p = produitsCache.find(x => x.id === id); return !p || p.ordre !== ordre; });
+  const resultats = await Promise.all(aChanger.map(({ id, ordre }) =>
+    supabaseClient.from('produits').update({ ordre }).eq('id', id)));
+  const echec = resultats.find(r => r.error);
+  if (echec) {
+    statut.textContent = "Erreur pendant l'enregistrement : " + echec.error.message;
+    statut.className = 'ordre-statut erreur';
+    return;
+  }
+  aChanger.forEach(({ id, ordre }) => { const p = produitsCache.find(x => x.id === id); if (p) p.ordre = ordre; });
+  statut.textContent = 'Ordre enregistré. Le site affiche maintenant les produits dans cet ordre.';
+  statut.className = 'ordre-statut ok';
 }
 
 // ===================== COMMANDES =====================
