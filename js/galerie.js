@@ -71,3 +71,17 @@ function afficherGalerie(conteneur, p) {
     if (e.key === 'ArrowLeft') { e.preventDefault(); aller(courant - 1); }
   });
 }
+
+// ===================== ORDRE D'AFFICHAGE =====================
+// Ordre choisi dans l'admin en faisant glisser les produits (colonne "ordre"),
+// puis les plus récents. Un produit jamais rangé (ordre vide) passe en premier.
+// Si la colonne n'existe pas encore en base, on retombe sur l'ordre par date.
+function trierProduits(requete, avecOrdre) {
+  if (avecOrdre) requete = requete.order('ordre', { ascending: true, nullsFirst: true });
+  return requete.order('cree_le', { ascending: false });
+}
+async function chargerProduitsTries(construire) {
+  let reponse = await construire(true);
+  if (reponse.error && /ordre/i.test(reponse.error.message || '')) reponse = await construire(false);
+  return reponse;
+}
