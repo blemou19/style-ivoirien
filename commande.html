@@ -78,14 +78,14 @@
 
       const recapHtml = `
         <div class="panier-recap" style="margin-top:20px;">
-          <div class="panier-recap-ligne">
+          ${commission ? `<div class="panier-recap-ligne">
             <span>Prix du panier</span>
             <span>${Number(commande.total).toLocaleString('fr-FR')} GNF${estFrance ? ` (≈ ${(commande.total / TAUX_EUR).toFixed(2)} €)` : ''}</span>
           </div>
           <div class="panier-recap-ligne">
             <span>Commission service</span>
             <span>${estFrance ? (commission / TAUX_EUR).toFixed(2) + ' €' : commission.toLocaleString('fr-FR') + ' GNF'}</span>
-          </div>
+          </div>` : ''}
           <div class="panier-recap-ligne panier-recap-total">
             <span>Total à payer</span>
             <span>${totalFinal.toLocaleString('fr-FR')} GNF${estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : ''}</span>
