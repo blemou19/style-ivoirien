@@ -193,6 +193,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="js/securite.js"></script>
 <script src="js/galerie.js"></script>
+<script src="js/devise.js"></script>
 <script src="js/main.js"></script>
 <script>
   let produitsApercu = [];
@@ -220,7 +221,7 @@
         <div class="produit-info">
           <span class="produit-categorie">${esc(p.categorie)}</span>
           <h3 class="produit-nom">${esc(p.nom)}</h3>
-          <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+          <span class="produit-prix">${prixHtml(p)}</span>
           <button class="btn-ajouter" data-id="${esc(p.id)}">Ajouter au panier</button>
         </div>
       </div>
@@ -244,7 +245,7 @@
         <button type="button" class="nouveaute-son" aria-label="Activer le son" data-son>🔇</button>
         <div class="nouveaute-info">
           <span class="nouveaute-nom">${esc(p.nom)}</span>
-          <span class="nouveaute-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+          <span class="nouveaute-prix">${prixHtml(p)}</span>
           <span class="nouveaute-cta">Voir le produit</span>
         </div>
       </article>
@@ -309,7 +310,7 @@
     afficherGalerie(document.getElementById('modal-media'), p);
     document.getElementById('modal-categorie').textContent = p.categorie;
     document.getElementById('modal-nom').textContent = p.nom;
-    document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
+    document.getElementById('modal-prix').innerHTML = prixHtml(p);
     document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
 
     const taillesEl = document.getElementById('modal-tailles');
@@ -333,7 +334,7 @@
 
     document.getElementById('modal-ajouter').onclick = () => {
       for (let i = 0; i < apercuQty; i++) {
-        ajouterAuPanier({ id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', taille: apercuTailleChoisie });
+        ajouterAuPanier({ id: p.id, nom: p.nom, prix: p.prix, prix_eur: p.prix_eur ?? null, image_url: p.image_url || '', taille: apercuTailleChoisie });
       }
       fermerDetailApercu();
     };

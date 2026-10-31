@@ -64,6 +64,7 @@ function commencerEdition(id) {
   document.getElementById('p-nom').value = produit.nom;
   document.getElementById('p-categorie').value = produit.categorie;
   document.getElementById('p-prix').value = produit.prix;
+  document.getElementById('p-prix-eur').value = produit.prix_eur ?? '';
   document.getElementById('p-tailles').value = produit.tailles || '';
   document.getElementById('p-stock').value = produit.stock ?? '';
   document.getElementById('p-a-la-une').checked = !!produit.a_la_une;
@@ -174,6 +175,7 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
     nom: document.getElementById('p-nom').value.trim(),
     categorie: document.getElementById('p-categorie').value.trim(),
     prix: Number(document.getElementById('p-prix').value),
+    prix_eur: document.getElementById('p-prix-eur').value === '' ? null : Number(document.getElementById('p-prix-eur').value),
     description: document.getElementById('p-description').value.trim(),
     image_url: imageUrl,
     video_url: videoUrl,
@@ -192,8 +194,12 @@ document.getElementById('form-nouveau-produit').addEventListener('submit', async
 
   boutonSubmit.disabled = false;
 
-  if (error) {
+  if (error && /prix_eur/.test(error.message || '')) {
+    alert("Le prix en euros ne peut pas encore être enregistré : il manque la colonne « prix_eur » dans la base (voir la PR). Le reste du produit n'a pas été enregistré.");
+  } else if (error) {
     alert("Erreur : " + error.message);
+  }
+  if (error) {
     boutonSubmit.textContent = editId ? 'Enregistrer les modifications' : 'Ajouter le produit';
     return;
   }
@@ -219,7 +225,7 @@ async function chargerProduitsAdmin() {
       <td style="font-family:var(--font-mono); font-size:11px;">${formatRefProduit(p.num)}</td>
       <td>${esc(p.nom)}${p.video_url ? ' 🎥' : ''}${p.a_la_une ? ' <span class="admin-badge-une">À la une</span>' : ''}${Array.isArray(p.images) && p.images.length ? ` <span style="font-size:11px; color:#665b51;">+${p.images.length} photo(s)</span>` : ''}</td>
       <td>${esc(p.categorie)}</td>
-      <td>${Number(p.prix).toLocaleString('fr-FR')} GNF</td>
+      <td>${Number(p.prix).toLocaleString('fr-FR')} GNF${p.prix_eur ? `<br><span style="color:#665b51;">${Number(p.prix_eur).toLocaleString('fr-FR')} €</span>` : ''}</td>
       <td>${p.stock !== null && p.stock !== undefined ? p.stock : '∞'}</td>
       <td>
         <select data-id="${esc(p.id)}" class="select-actif-produit">
