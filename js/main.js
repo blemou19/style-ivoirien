@@ -23,7 +23,7 @@ const NUMERO_WHATSAPP = '33744192080';
 const NUMERO_WHATSAPP_FRANCE = '33744192080';
 // Commission de service (3 % local, 10 % France) : désactivée pour l'instant. Remettre à true pour la réactiver.
 const COMMISSION_ACTIVE = false;
-const TAUX_EUR = 10100; // GNF pour 1 euro — à ajuster de temps en temps selon le taux réel
+// Taux GNF/euro et prix en GNF, euros, FCFA : voir js/devise.js
 
 function genererReference() {
   const d = new Date();
@@ -96,8 +96,14 @@ function supprimerDuPanier(id, taille) {
   afficherPanier();
 }
 
+// Total en GNF (enregistré en base pour les statistiques de l'admin)
 function calculerTotal(panier) {
   return panier.reduce((somme, item) => somme + item.qty * Number(item.prix), 0);
+}
+
+// Total dans la devise choisie par le client
+function calculerTotalDevise(panier, devise = deviseActive) {
+  return panier.reduce((somme, item) => somme + item.qty * montantProduit(item, devise), 0);
 }
 
 function creerPanierDrawer() {
@@ -159,7 +165,7 @@ function creerPanierDrawer() {
           <span>Total à payer</span>
           <span id="recap-total">0 GNF</span>
         </div>
-        <p id="panier-recap-note" class="panier-recap-note" style="display:none;">⚠️ Ce montant ne couvre pas la livraison. Les frais d'expédition (environ 12€/kg, soit ≈ 121 200 GNF/kg) seront communiqués séparément une fois votre colis prêt et pesé.</p>
+        <p id="panier-recap-note" class="panier-recap-note" style="display:none;"></p>
       </div>
       <button id="panier-commander" class="btn btn-primary panier-commander-btn">Commander via WhatsApp</button>
       <p class="panier-note">Vous serez redirigé vers WhatsApp pour finaliser avec Style Ivoirien. En commandant, vous acceptez nos <a href="mentions-legales.html#cgv">conditions de vente</a> et notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
@@ -182,6 +188,9 @@ document.addEventListener('change', (e) => {
     champAutre.style.display = e.target.value === 'autre' ? 'block' : 'none';
   }
   if (e.target.id === 'panier-zone') {
+    // la devise suit la zone : euros pour la France, GNF pour un retrait à Conakry
+    if (e.target.value.startsWith('Livraison France')) changerDevise('EUR');
+    else if (e.target.value === 'Retrait à Conakry') changerDevise('GNF');
     majRecap();
     majOptionsPaiement();
   }
@@ -208,17 +217,17 @@ function majRecap() {
   const zone = zoneEl.value;
   const estFrance = zone.startsWith('Livraison France');
   const panier = getPanier();
-  const total = calculerTotal(panier);
+  const total = calculerTotalDevise(panier);
   const commission = calculerCommission(zone, total);
   const totalFinal = total + commission;
 
-  document.getElementById('recap-prix-panier').textContent = total.toLocaleString('fr-FR') + ' GNF' + (estFrance ? ` (≈ ${(total / TAUX_EUR).toFixed(2)} €)` : '');
+  document.getElementById('recap-prix-panier').textContent = formaterMontant(total);
   document.getElementById('recap-commission-label').textContent = 'Commission service';
-  document.getElementById('recap-commission').textContent = estFrance
-    ? (commission / TAUX_EUR).toFixed(2) + ' €'
-    : commission.toLocaleString('fr-FR') + ' GNF';
-  document.getElementById('recap-total').textContent = totalFinal.toLocaleString('fr-FR') + ' GNF' + (estFrance ? ` (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)` : '');
-  document.getElementById('panier-recap-note').style.display = estFrance ? 'block' : 'none';
+  document.getElementById('recap-commission').textContent = formaterMontant(commission);
+  document.getElementById('recap-total').textContent = formaterMontant(totalFinal);
+  const note = document.getElementById('panier-recap-note');
+  note.textContent = `⚠️ Ce montant ne couvre pas la livraison. Les frais d'expédition (environ ${fraisParKilo()}) seront communiqués séparément une fois votre colis prêt et pesé.`;
+  note.style.display = estFrance ? 'block' : 'none';
   // sans commission, seul le total compte : on n'affiche pas les lignes de détail
   document.getElementById('recap-ligne-prix').style.display = COMMISSION_ACTIVE ? '' : 'none';
   document.getElementById('recap-ligne-commission').style.display = COMMISSION_ACTIVE ? '' : 'none';
@@ -249,7 +258,7 @@ function afficherPanier() {
         </div>
         <div class="panier-item-info">
           <span class="panier-item-nom">${esc(item.nom)}${item.taille ? `, taille ${esc(item.taille)}` : ''}</span>
-          <span class="panier-item-prix">${Number(item.prix).toLocaleString('fr-FR')} GNF</span>
+          <span class="panier-item-prix">${formaterMontant(montantProduit(item))}</span>
           <div class="panier-item-qty">
             <button data-action="moins" data-id="${esc(item.id)}" data-taille="${esc(item.taille || '')}">−</button>
             <span>${esc(item.qty)}</span>
@@ -261,7 +270,7 @@ function afficherPanier() {
     `).join('');
   }
 
-  document.getElementById('panier-total-montant').textContent = calculerTotal(panier).toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('panier-total-montant').textContent = formaterMontant(calculerTotalDevise(panier));
   majRecap();
   majOptionsPaiement();
 }
@@ -310,27 +319,26 @@ async function envoyerCommande() {
   const piege = document.getElementById('panier-piege');
   if (piege && piege.value) return; // robot détecté : on ignore silencieusement
 
-  const total = calculerTotal(panier);
+  const total = calculerTotal(panier);              // en GNF, pour l'admin
+  const devise = deviseActive;
+  const totalDevise = calculerTotalDevise(panier, devise);
   const reference = genererReference();
-  const commission = calculerCommission(zone, total);
+  const commission = calculerCommission(zone, totalDevise);
   const estFrance = zone.startsWith('Livraison France');
-  const totalFinal = total + commission;
+  const totalFinal = totalDevise + commission;
 
-  const donneesCommande = { reference, nom, telephone, articles: panier, total, zone, commission, totalFinal, estFrance, date: new Date().toISOString() };
+  const donneesCommande = { reference, nom, telephone, articles: panier, total, devise, totalDevise, zone, commission, totalFinal, estFrance, date: new Date().toISOString() };
   const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
   const lienDetail = `${base}commande.html?d=${encodeURIComponent(JSON.stringify(donneesCommande))}`;
 
   const lignes = panier.map(item =>
-    `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${Number(item.prix).toLocaleString('fr-FR')} GNF)`
+    `- ${item.nom}${item.taille ? ` (Taille ${item.taille})` : ''} x${item.qty} (${formaterMontant(montantProduit(item, devise), devise)})`
   ).join('\n');
 
-  const recap = !COMMISSION_ACTIVE
-    ? (estFrance
-      ? `\nTotal des articles : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nFrais de livraison : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué après pesée du colis\n`
-      : `\nTotal à payer : ${total.toLocaleString('fr-FR')} GNF\n`)
-    : estFrance
-    ? `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF (≈ ${(total / TAUX_EUR).toFixed(2)} €)\nCommission service : ${(commission / TAUX_EUR).toFixed(2)} €\nÀ payer maintenant : ${totalFinal.toLocaleString('fr-FR')} GNF (≈ ${(totalFinal / TAUX_EUR).toFixed(2)} €)\nFrais de livraison : environ 12€/kg (≈ 121 200 GNF/kg), montant exact communiqué après pesée du colis\n`
-    : `\nPrix du panier : ${total.toLocaleString('fr-FR')} GNF\nCommission service : ${commission.toLocaleString('fr-FR')} GNF\nTotal à payer : ${totalFinal.toLocaleString('fr-FR')} GNF\n`;
+  const recap = (commission ? `\nPrix du panier : ${formaterMontant(totalDevise, devise)}\nCommission service : ${formaterMontant(commission, devise)}` : '')
+    + `\nTotal à payer : ${formaterMontant(totalFinal, devise)}\n`
+    + (devise !== 'GNF' ? `(prix boutique : ${formaterMontant(total, 'GNF')})\n` : '')
+    + (estFrance ? `Frais de livraison : environ ${fraisParKilo(devise)}, montant exact communiqué après pesée du colis\n` : '');
 
   const infoPaiement = `\nMoyen de paiement souhaité : ${moyenPaiement}\n`;
 
@@ -357,7 +365,11 @@ async function envoyerCommande() {
 }
 
 creerPanierDrawer();
+creerChoixDevise();
 mettreAJourBadge();
+document.addEventListener('devise-changee', () => {
+  if (document.getElementById('panier-drawer').classList.contains('ouvert')) afficherPanier();
+});
 
 // ===================== BANNIÈRE D'INSTALLATION =====================
 let deferredInstallPrompt = null;

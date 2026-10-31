@@ -60,7 +60,7 @@ function formatRefProduit(num) {
 function carteProduitHtml(p) {
   const epuise = p.stock !== null && p.stock !== undefined && p.stock <= 0;
   const produitData = encodeURIComponent(JSON.stringify({
-    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', stock: p.stock ?? null
+    id: p.id, nom: p.nom, prix: p.prix, prix_eur: p.prix_eur ?? null, image_url: p.image_url || '', stock: p.stock ?? null
   }));
   return `
     <div class="produit-card" data-id="${esc(p.id)}">
@@ -73,7 +73,7 @@ function carteProduitHtml(p) {
       <div class="produit-info">
         <span class="produit-categorie">${esc(p.categorie)}</span>
         <h3 class="produit-nom">${esc(p.nom)}</h3>
-        <span class="produit-prix">${Number(p.prix).toLocaleString('fr-FR')} GNF</span>
+        <span class="produit-prix">${prixHtml(p)}</span>
         <button class="btn-ajouter" data-produit="${produitData}" data-id="${esc(p.id)}" ${epuise ? 'disabled' : ''}>${epuise ? 'Épuisé' : 'Ajouter au panier'}</button>
       </div>
     </div>
@@ -130,7 +130,7 @@ function ouvrirDetailProduit(id) {
   document.getElementById('modal-categorie').textContent = p.categorie;
   document.getElementById('modal-nom').textContent = p.nom;
   document.getElementById('modal-ref').textContent = formatRefProduit(p.num);
-  document.getElementById('modal-prix').textContent = Number(p.prix).toLocaleString('fr-FR') + ' GNF';
+  document.getElementById('modal-prix').innerHTML = prixHtml(p);
   document.getElementById('modal-desc').textContent = p.description || 'Aucune description pour ce produit.';
 
   const stockEl = document.getElementById('modal-stock');
@@ -166,7 +166,7 @@ function ouvrirDetailProduit(id) {
   }
 
   document.getElementById('modal-ajouter').dataset.produit = encodeURIComponent(JSON.stringify({
-    id: p.id, nom: p.nom, prix: p.prix, image_url: p.image_url || '', stock: p.stock ?? null
+    id: p.id, nom: p.nom, prix: p.prix, prix_eur: p.prix_eur ?? null, image_url: p.image_url || '', stock: p.stock ?? null
   }));
 
   document.getElementById('produit-modal-overlay').classList.add('ouvert');
