@@ -178,12 +178,28 @@ function collecterMesures() {
 
 document.getElementById('form-sur-mesure').addEventListener('submit', async (e) => {
   e.preventDefault();
+  // Toute erreur imprévue est affichée au lieu de laisser le bouton sans effet
+  try {
+    await envoyerDemandeSurMesure(e);
+  } catch (err) {
+    console.error(err);
+    const bouton = e.target.querySelector('button[type="submit"]');
+    bouton.disabled = false;
+    bouton.textContent = 'Envoyer la demande via WhatsApp';
+    alert("L'envoi n'a pas fonctionné (" + (err && err.message ? err.message : 'erreur inconnue') + "). Réessayez, ou écrivez-nous directement sur WhatsApp.");
+  }
+});
+
+async function envoyerDemandeSurMesure(e) {
 
   if (!dateChoisie) {
     alert('Merci de choisir une date dans le calendrier.');
     return;
   }
-  if (estRobot(e.target)) return; // robot détecté : on ignore silencieusement
+  if (estRobot(e.target)) {
+    alert('Merci de vérifier vos informations puis de réessayer dans quelques secondes.');
+    return;
+  }
   {
     const indSel = document.getElementById('sm-indicatif').value;
     const ind = indSel === 'autre' ? document.getElementById('sm-indicatif-autre').value.replace(/[^0-9]/g, '') : indSel;
@@ -297,7 +313,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   dateChoisie = null;
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
-});
+}
 
 function afficherConfirmationRdv(lien) {
   let boite = document.getElementById('rdv-confirmation');
