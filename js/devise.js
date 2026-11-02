@@ -3,7 +3,7 @@
 // - GNF  : le prix GNF du produit.
 // - EURO : le prix en euros saisi dans l'admin ; sinon conversion du prix GNF au taux ci-dessous.
 // - FCFA : calculé depuis le prix en euros (parité fixe 1 € = 655,957 FCFA), arrondi à 500 FCFA.
-const TAUX_EUR = 10100;          // GNF pour 1 euro : à ajuster de temps en temps selon le taux réel
+const TAUX_EUR = 10000;          // GNF pour 1 euro (taux fixé par la boutique : 300 000 GNF = 30 €)
 const TAUX_FCFA_EUR = 655.957;   // parité fixe du franc CFA avec l'euro
 const DEVISES = { GNF: 'GNF', EUR: '€ Euro', XOF: 'FCFA' };
 const CLE_DEVISE = 'style_ivoirien_devise';
