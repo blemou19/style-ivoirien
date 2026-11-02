@@ -195,25 +195,27 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   }
 
   const boutonSubmitSM = e.target.querySelector('button[type="submit"]');
+  const texteBouton = boutonSubmitSM.textContent;
+  const finEnvoi = () => { boutonSubmitSM.disabled = false; boutonSubmitSM.textContent = texteBouton; };
+  boutonSubmitSM.disabled = true;
+  boutonSubmitSM.textContent = 'Envoi en cours…';
   let fichierPhotoModele = document.getElementById('sm-photo-modele').files[0];
   const statutPhotoEl = document.getElementById('sm-photo-statut');
   let photoModeleUrl = '';
 
   if (fichierPhotoModele) {
     fichierPhotoModele = await compresserImage(fichierPhotoModele);
-    boutonSubmitSM.disabled = true;
     statutPhotoEl.textContent = 'Envoi de la photo...';
     const nomFichier = `${Date.now()}-${fichierPhotoModele.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const { error: erreurUploadPhoto } = await supabaseClient.storage.from('rendez-vous').upload(nomFichier, fichierPhotoModele);
     if (erreurUploadPhoto) {
       statutPhotoEl.textContent = "Erreur lors de l'envoi de la photo, réessaie.";
-      boutonSubmitSM.disabled = false;
+      finEnvoi();
       return;
     }
     const { data: urlDataPhoto } = supabaseClient.storage.from('rendez-vous').getPublicUrl(nomFichier);
     photoModeleUrl = urlDataPhoto.publicUrl;
     statutPhotoEl.textContent = '';
-    boutonSubmitSM.disabled = false;
   }
 
   const nom = document.getElementById('sm-nom').value.trim();
@@ -235,6 +237,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
   if (!nom || !telephone || !vetement) {
     alert('Merci de remplir au moins votre nom, téléphone et le type de vêtement souhaité.');
+    finEnvoi();
     return;
   }
 
@@ -257,6 +260,7 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   if (error) {
     console.error('Erreur enregistrement rendez-vous :', error);
     alert("Un problème est survenu, réessaie dans un instant.");
+    finEnvoi();
     return;
   }
 
@@ -279,7 +283,12 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
     `Nom : ${nom}\nTéléphone : ${telephone}`;
 
   const lienWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`;
-  window.open(lienWhatsApp, '_blank');
+  // La demande est enregistrée. Sur iPhone, window.open est bloqué après une attente (envoi de la photo,
+  // enregistrement) : rien ne s'ouvrait. On affiche donc une confirmation avec un vrai lien WhatsApp,
+  // et on essaie d'ouvrir WhatsApp directement dans la page.
+  afficherConfirmationRdv(lienWhatsApp);
+  finEnvoi();
+  window.location.href = lienWhatsApp;
 
   localStorage.removeItem(MODELES_KEY);
   document.getElementById('form-sur-mesure').reset();
@@ -289,6 +298,22 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
 });
+
+function afficherConfirmationRdv(lien) {
+  let boite = document.getElementById('rdv-confirmation');
+  if (!boite) {
+    boite = document.createElement('div');
+    boite.id = 'rdv-confirmation';
+    boite.className = 'rdv-confirmation';
+    boite.setAttribute('role', 'status');
+    document.getElementById('form-sur-mesure').before(boite);
+  }
+  boite.innerHTML = `
+    <p><strong>Votre demande est bien enregistrée.</strong></p>
+    <p>Dernière étape : envoyez-la sur WhatsApp pour que Style Ivoirien vous confirme le rendez-vous.</p>
+    <a class="btn btn-primary" href="${lien.replace(/"/g, '&quot;')}" target="_blank" rel="noopener">Ouvrir WhatsApp</a>`;
+  boite.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 chargerIndisponibilites();
 
