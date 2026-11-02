@@ -218,6 +218,7 @@ async function envoyerDemandeSurMesure(e) {
   let fichierPhotoModele = document.getElementById('sm-photo-modele').files[0];
   const statutPhotoEl = document.getElementById('sm-photo-statut');
   let photoModeleUrl = '';
+  let photoNonEnvoyee = false;
 
   if (fichierPhotoModele) {
     fichierPhotoModele = await compresserImage(fichierPhotoModele);
@@ -225,13 +226,15 @@ async function envoyerDemandeSurMesure(e) {
     const nomFichier = `${Date.now()}-${fichierPhotoModele.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const { error: erreurUploadPhoto } = await supabaseClient.storage.from('rendez-vous').upload(nomFichier, fichierPhotoModele);
     if (erreurUploadPhoto) {
-      statutPhotoEl.textContent = "Erreur lors de l'envoi de la photo, réessaie.";
-      finEnvoi();
-      return;
+      // La photo ne bloque jamais la demande : on continue sans elle, la cliente l'enverra sur WhatsApp
+      console.error('Envoi de la photo impossible :', erreurUploadPhoto);
+      photoNonEnvoyee = true;
+      statutPhotoEl.textContent = "La photo n'a pas pu être envoyée : joignez-la dans la conversation WhatsApp.";
+    } else {
+      const { data: urlDataPhoto } = supabaseClient.storage.from('rendez-vous').getPublicUrl(nomFichier);
+      photoModeleUrl = urlDataPhoto.publicUrl;
+      statutPhotoEl.textContent = '';
     }
-    const { data: urlDataPhoto } = supabaseClient.storage.from('rendez-vous').getPublicUrl(nomFichier);
-    photoModeleUrl = urlDataPhoto.publicUrl;
-    statutPhotoEl.textContent = '';
   }
 
   const nom = document.getElementById('sm-nom').value.trim();
@@ -291,6 +294,7 @@ async function envoyerDemandeSurMesure(e) {
     `Vêtement : ${vetement}\n` +
     (modeles.length > 0 ? `Modèle(s) inspiré(s) du catalogue :\n${lignesModeles}\n` : '') +
     (photoModeleUrl ? `Photo de référence : ${photoModeleUrl}\n` : '') +
+    (photoNonEnvoyee ? `Photo de référence : je vous l'envoie ici.\n` : '') +
     `Mesures : ${mesures}\n` +
     `Mode : ${mode}\n` +
     `Date souhaitée : ${dateLisible} à ${heure}\n` +
