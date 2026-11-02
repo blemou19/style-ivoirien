@@ -360,7 +360,10 @@ async function chargerCommandesAdmin() {
           <option ${c.statut==='Annulée'?'selected':''}>Annulée</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${esc(c.id)}" data-action="contacter-commande">Contacter</button></td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${esc(c.id)}" data-action="contacter-commande">Contacter</button>
+        <button class="admin-action-btn" data-id="${esc(c.id)}" data-action="supprimer-commande">Supprimer</button>
+      </td>
     </tr>
   `).join('');
 
@@ -368,6 +371,13 @@ async function chargerCommandesAdmin() {
     sel.addEventListener('change', async () => {
       await supabaseClient.from('commandes').update({ statut: sel.value }).eq('id', sel.dataset.id);
       chargerCommandesAdmin();
+    });
+  });
+
+  document.querySelectorAll('[data-action="supprimer-commande"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = commandesCache.find(x => x.id === btn.dataset.id);
+      supprimerLigne('commandes', btn.dataset.id, `la commande ${c && c.reference ? c.reference : ''} de ${c ? c.client_nom : 'ce client'}`, chargerCommandesAdmin);
     });
   });
 
@@ -389,6 +399,20 @@ async function chargerCommandesAdmin() {
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
     });
   });
+}
+
+// ===================== SUPPRESSION (commandes, rendez-vous) =====================
+// Supprime une ligne après confirmation. Si la base refuse sans erreur (aucune ligne supprimée),
+// c'est qu'il manque l'autorisation de suppression dans Supabase.
+async function supprimerLigne(table, id, libelle, recharger) {
+  if (!confirm(`Supprimer définitivement ${libelle} ?`)) return;
+  const { data, error } = await supabaseClient.from(table).delete().eq('id', id).select('id');
+  if (error) { alert('Erreur : ' + error.message); return; }
+  if (!data || data.length === 0) {
+    alert("La suppression a été refusée par la base (autorisation manquante dans Supabase).");
+    return;
+  }
+  recharger();
 }
 
 // ===================== RENDEZ-VOUS =====================
@@ -416,7 +440,10 @@ async function chargerRendezVousAdmin() {
           <option ${r.statut==='Annulé'?'selected':''}>Annulé</option>
         </select>
       </td>
-      <td><button class="admin-action-btn" data-id="${esc(r.id)}" data-action="contacter-rdv">Contacter</button></td>
+      <td style="white-space:nowrap;">
+        <button class="admin-action-btn" data-id="${esc(r.id)}" data-action="contacter-rdv">Contacter</button>
+        <button class="admin-action-btn" data-id="${esc(r.id)}" data-action="supprimer-rdv">Supprimer</button>
+      </td>
     </tr>
   `).join('');
 
@@ -432,6 +459,13 @@ async function chargerRendezVousAdmin() {
       await supabaseClient.from('rendez_vous').update({ devis_gnf: valeur }).eq('id', input.dataset.id);
       const r = rdvCache.find(x => x.id === input.dataset.id);
       if (r) r.devis_gnf = valeur;
+    });
+  });
+
+  document.querySelectorAll('[data-action="supprimer-rdv"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rdvCache.find(x => x.id === btn.dataset.id);
+      supprimerLigne('rendez_vous', btn.dataset.id, `la demande de ${r ? r.client_nom : 'ce client'}`, chargerRendezVousAdmin);
     });
   });
 
