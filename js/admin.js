@@ -415,6 +415,13 @@ async function supprimerLigne(table, id, libelle, recharger) {
   recharger();
 }
 
+// Lieu de l'atelier, ajouté au message de confirmation des rendez-vous à l'atelier
+const ATELIER = {
+  adresse: "Style Ivoirien, Lambanyi (carrefour Université Mahatma Gandhi), à côté de la Pharmacie Elohim, Conakry",
+  maps: 'https://maps.google.com/?q=9.64075,-13.61318',
+  telephone: '+224 626 32 18 60'
+};
+
 // ===================== RENDEZ-VOUS =====================
 let rdvCache = [];
 
@@ -481,7 +488,9 @@ async function chargerRendezVousAdmin() {
 
       const messages = {
         'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
-        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}.${devisTexte} À bientôt !`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}.${devisTexte}`
+          + (r.mode === 'En ligne' ? '' : `\n\n📍 Adresse : ${ATELIER.adresse}\nItinéraire : ${ATELIER.maps}`)
+          + `\n📞 Pour nous joindre : ${ATELIER.telephone}\n\nÀ bientôt !`,
         'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)}\n\nÀ bientôt pour une prochaine création !`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
