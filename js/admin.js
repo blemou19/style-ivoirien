@@ -422,6 +422,12 @@ const ATELIER = {
   telephone: '+224 626 32 18 60'
 };
 
+// Adresse + itinéraire (sauf rendez-vous en ligne) + numéro, pour les messages aux clientes
+function blocLieu(r) {
+  return (r.mode === 'En ligne' ? '' : `\n\n📍 Adresse : ${ATELIER.adresse}\nItinéraire : ${ATELIER.maps}`)
+    + `\n📞 Pour nous joindre : ${ATELIER.telephone}`;
+}
+
 // ===================== RENDEZ-VOUS =====================
 let rdvCache = [];
 
@@ -449,6 +455,7 @@ async function chargerRendezVousAdmin() {
       </td>
       <td style="white-space:nowrap;">
         <button class="admin-action-btn" data-id="${esc(r.id)}" data-action="contacter-rdv">Contacter</button>
+        <button class="admin-action-btn" data-id="${esc(r.id)}" data-action="rappel-rdv" title="Envoyer un rappel du rendez-vous sur WhatsApp">Rappel</button>
         <button class="admin-action-btn" data-id="${esc(r.id)}" data-action="supprimer-rdv">Supprimer</button>
       </td>
     </tr>
@@ -476,6 +483,20 @@ async function chargerRendezVousAdmin() {
     });
   });
 
+  // Rappel : même infos que la confirmation (date, lieu, numéro) + possibilité d'annuler ou déplacer
+  document.querySelectorAll('[data-action="rappel-rdv"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rdvCache.find(x => x.id === btn.dataset.id);
+      if (!r) return;
+      const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const message = `Bonjour ${r.client_nom}, petit rappel : votre rendez-vous pour "${r.type_vetement}" est prévu le ${dateLisible} à ${r.heure_souhaitee}.`
+        + blocLieu(r)
+        + `\n\nEn cas d'imprévu, si vous souhaitez annuler ou déplacer votre rendez-vous, prévenez-nous simplement en répondant à ce message.\n\nÀ très bientôt !`;
+      const numero = r.client_telephone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
+    });
+  });
+
   document.querySelectorAll('[data-action="contacter-rdv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = rdvCache.find(x => x.id === btn.dataset.id);
@@ -489,8 +510,7 @@ async function chargerRendezVousAdmin() {
       const messages = {
         'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre demande pour "${r.type_vetement}" le ${dateLisible} à ${r.heure_souhaitee}. Nous revenons vers vous rapidement.`,
         'Confirmé': `Bonjour ${r.client_nom}, votre rendez-vous pour "${r.type_vetement}" est confirmé pour le ${dateLisible} à ${r.heure_souhaitee}.${devisTexte}`
-          + (r.mode === 'En ligne' ? '' : `\n\n📍 Adresse : ${ATELIER.adresse}\nItinéraire : ${ATELIER.maps}`)
-          + `\n📞 Pour nous joindre : ${ATELIER.telephone}\n\nÀ bientôt !`,
+          + blocLieu(r) + `\n\nÀ bientôt !`,
         'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)}\n\nÀ bientôt pour une prochaine création !`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
