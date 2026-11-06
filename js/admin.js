@@ -417,7 +417,7 @@ async function supprimerLigne(table, id, libelle, recharger) {
 
 // Lieu de l'atelier, ajouté au message de confirmation des rendez-vous à l'atelier
 const ATELIER = {
-  adresse: "Style Ivoirien, Lambanyi (carrefour Université Mahatma Gandhi), à côté de la Pharmacie Elohim, Conakry",
+  adresse: "Style Ivoirien, Lambanyi (carrefour Université Mahatma Gandhi), Conakry : sur la route principale, en face d’Emycil Decor",
   maps: 'https://maps.google.com/?q=9.64075,-13.61318',
   telephone: '+224 626 32 18 60'
 };
