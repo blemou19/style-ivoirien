@@ -6,7 +6,7 @@
 <title>Style Ivoirien | Mode africaine &amp; couture sur mesure</title>
 <link rel="preload" href="fonts/work-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=20261106b">
+<link rel="stylesheet" href="css/style.css?v=20261109">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
@@ -191,10 +191,10 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/securite.js?v=20261106b"></script>
-<script src="js/galerie.js?v=20261106b"></script>
-<script src="js/devise.js?v=20261106b"></script>
-<script src="js/main.js?v=20261106b"></script>
+<script src="js/securite.js?v=20261109"></script>
+<script src="js/galerie.js?v=20261109"></script>
+<script src="js/devise.js?v=20261109"></script>
+<script src="js/main.js?v=20261109"></script>
 <script>
   let produitsApercu = [];
   let apercuQty = 1;
@@ -241,7 +241,8 @@
     const rail = document.getElementById('nouveautes-rail');
     rail.innerHTML = data.map(p => `
       <article class="nouveaute" data-id="${esc(p.id)}" tabindex="0">
-        <video src="${urlSure(p.video_url)}" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''} muted autoplay loop playsinline preload="none"></video>
+        <video src="${urlSure(p.video_url)}#t=0.1" ${p.image_url ? `poster="${urlSure(p.image_url)}"` : ''} muted autoplay loop playsinline webkit-playsinline preload="metadata"></video>
+        <span class="nouveaute-lecture" aria-hidden="true">▶</span>
         <button type="button" class="nouveaute-son" aria-label="Activer le son" data-son>🔇</button>
         <div class="nouveaute-info">
           <span class="nouveaute-nom">${esc(p.nom)}</span>
@@ -255,12 +256,21 @@
     const videos = [...rail.querySelectorAll('video')];
     // lecture automatique, sans le son : chaque vidéo démarre dès qu'elle apparaît à l'écran
     videos.forEach(v => { v.muted = true; v.defaultMuted = true; v.setAttribute('autoplay', ''); });
-    const lancer = v => { const p = v.play(); if (p) p.catch(() => {}); };
+    // si le téléphone refuse la lecture automatique (mode économie d'énergie, données limitées…),
+    // on affiche un bouton ▶ : un toucher sur la vidéo la lance
+    const lancer = v => {
+      const p = v.play();
+      if (p) p.then(() => v.parentElement.classList.remove('en-pause')).catch(() => v.parentElement.classList.add('en-pause'));
+    };
+    videos.forEach(v => {
+      v.addEventListener('playing', () => v.parentElement.classList.remove('en-pause'));
+      v.addEventListener('pause', () => v.parentElement.classList.add('en-pause'));
+    });
     if ('IntersectionObserver' in window) {
       const obs = new IntersectionObserver(entrees => {
         entrees.forEach(en => {
           const v = en.target;
-          if (en.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; lancer(v); }
+          if (en.isIntersecting) { if (v.preload !== 'auto') v.preload = 'auto'; lancer(v); }
           else { v.pause(); }
         });
       }, { threshold: 0.25 });
@@ -291,7 +301,11 @@
         return;
       }
       const carte = e.target.closest('.nouveaute');
-      if (carte) ouvrirCarte(carte);
+      if (!carte) return;
+      // vidéo à l'arrêt : le premier toucher la lance, le suivant ouvre le produit
+      const v = carte.querySelector('video');
+      if (v.paused) { lancer(v); return; }
+      ouvrirCarte(carte);
     });
     rail.addEventListener('keydown', (e) => {
       const carte = e.target.closest('.nouveaute');
