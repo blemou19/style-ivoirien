@@ -150,8 +150,21 @@ document.querySelectorAll('input[name="sait-mesures"]').forEach(radio => {
   radio.addEventListener('change', () => {
     document.getElementById('bloc-mesures').style.display =
       (radio.value === 'oui' && radio.checked) ? 'grid' : 'none';
+    majDateFacultative();
   });
 });
+
+// Mesures connues : pas besoin de venir, donc la date et l'heure deviennent facultatives
+function connaitMesures() {
+  return document.querySelector('input[name="sait-mesures"]:checked').value === 'oui';
+}
+function majDateFacultative() {
+  const facultatif = connaitMesures();
+  document.getElementById('sm-heure').required = !facultatif;
+  document.getElementById('sm-date-info').textContent = facultatif
+    ? "Vous connaissez vos mesures : la date et l'heure sont facultatives. Sans date, votre commande part directement, sans rendez-vous."
+    : '';
+}
 
 function collecterMesures() {
   const saitMesures = document.querySelector('input[name="sait-mesures"]:checked').value;
@@ -192,7 +205,8 @@ document.getElementById('form-sur-mesure').addEventListener('submit', async (e) 
 
 async function envoyerDemandeSurMesure(e) {
 
-  if (!dateChoisie) {
+  const sansRdv = connaitMesures() && !dateChoisie;
+  if (!dateChoisie && !sansRdv) {
     alert('Merci de choisir une date dans le calendrier.');
     return;
   }
@@ -247,7 +261,7 @@ async function envoyerDemandeSurMesure(e) {
   const vetement = document.getElementById('sm-vetement').value.trim();
   const mesures = collecterMesures();
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const heure = document.getElementById('sm-heure').value;
+  const heure = sansRdv ? null : document.getElementById('sm-heure').value;
   const notes = document.getElementById('sm-notes').value.trim();
   const moyenPaiement = document.getElementById('sm-paiement').value;
   const modeles = getModelesChoisis();
@@ -278,12 +292,14 @@ async function envoyerDemandeSurMesure(e) {
 
   if (error) {
     console.error('Erreur enregistrement rendez-vous :', error);
-    alert("Un problème est survenu, réessaie dans un instant.");
+    alert(sansRdv && /null/i.test(error.message || '')
+      ? "Pour l'instant, merci de choisir une date dans le calendrier pour envoyer votre demande."
+      : "Un problème est survenu, réessaie dans un instant.");
     finEnvoi();
     return;
   }
 
-  const dateLisible = new Date(dateChoisie + 'T00:00:00')
+  const dateLisible = sansRdv ? '' : new Date(dateChoisie + 'T00:00:00')
     .toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const lignesModeles = modeles.length > 0
@@ -296,8 +312,8 @@ async function envoyerDemandeSurMesure(e) {
     (photoModeleUrl ? `Photo de référence : ${photoModeleUrl}\n` : '') +
     (photoNonEnvoyee ? `Photo de référence : je vous l'envoie ici.\n` : '') +
     `Mesures : ${mesures}\n` +
-    `Mode : ${mode}\n` +
-    `Date souhaitée : ${dateLisible} à ${heure}\n` +
+    (sansRdv ? '' : `Mode : ${mode}\n`) +
+    (sansRdv ? `Sans rendez-vous : je connais mes mesures.\n` : `Date souhaitée : ${dateLisible} à ${heure}\n`) +
     (notes ? `Notes : ${notes}\n` : '') +
     `Moyen de paiement souhaité : ${moyenPaiement}\n` +
     `Nom : ${nom}\nTéléphone : ${telephone}`;
@@ -315,6 +331,7 @@ async function envoyerDemandeSurMesure(e) {
   document.getElementById('bloc-mesures').style.display = 'none';
   afficherModelesChoisis();
   dateChoisie = null;
+  majDateFacultative();
   document.getElementById('date-choisie-affichage').textContent = 'Choisissez une date dans le calendrier ci-dessus.';
   genererCalendrier();
 }

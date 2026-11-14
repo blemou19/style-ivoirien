@@ -1009,3 +1009,6 @@
 .rdv-confirmation{ background:#eef7f0; border:1px solid #9fcfad; border-radius:var(--radius); padding:18px; margin:0 0 20px; }
 .rdv-confirmation p{ margin:0 0 8px; }
 .rdv-confirmation .btn{ margin-top:6px; display:inline-flex; }
+
+.sm-date-info{ font-size:13px; color:#2e7d4f; margin:0; }
+.sm-date-info:empty{ display:none; }
