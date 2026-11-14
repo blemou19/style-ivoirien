@@ -432,7 +432,7 @@ function blocLieu(r) {
 let rdvCache = [];
 
 async function chargerRendezVousAdmin() {
-  const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true });
+  const { data, error } = await supabaseClient.from('rendez_vous').select('*').order('date_souhaitee', { ascending: true, nullsFirst: true });
   const tbody = document.getElementById('tbody-rdv');
   if (error || !data) { tbody.innerHTML = '<tr><td colspan="7">Erreur de chargement.</td></tr>'; return; }
 
@@ -440,7 +440,7 @@ async function chargerRendezVousAdmin() {
 
   tbody.innerHTML = data.map(r => `
     <tr>
-      <td>${new Date(r.date_souhaitee).toLocaleDateString('fr-FR')} ${esc(r.heure_souhaitee || '')}</td>
+      <td>${r.date_souhaitee ? new Date(r.date_souhaitee).toLocaleDateString('fr-FR') + ' ' + esc(r.heure_souhaitee || '') : 'Sans rendez-vous'}</td>
       <td>${esc(r.client_nom)}<br><span style="color:#665b51;">${esc(r.client_telephone)}</span></td>
       <td>${esc(r.type_vetement)}${r.modele_ref ? `<br><span style="color:#665b51; font-size:11px;">Catalogue : ${esc(r.modele_ref)}</span>` : ''}${r.photo_modele_url ? `<br><a href="${urlSure(r.photo_modele_url)}" target="_blank" style="color:var(--terracotta-dark); font-size:11px;">Voir photo jointe</a>` : ''}</td>
       <td>${esc(r.mode)}<br><span style="color:#665b51; font-size:11px;">${esc(r.moyen_paiement || '')}</span></td>
@@ -488,6 +488,7 @@ async function chargerRendezVousAdmin() {
     btn.addEventListener('click', () => {
       const r = rdvCache.find(x => x.id === btn.dataset.id);
       if (!r) return;
+      if (!r.date_souhaitee) { alert("Cette demande est sans rendez-vous : il n'y a pas de date à rappeler."); return; }
       const dateLisible = new Date(r.date_souhaitee).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
       const message = `Bonjour ${r.client_nom}, petit rappel : votre rendez-vous pour "${r.type_vetement}" est prévu le ${dateLisible} à ${r.heure_souhaitee}.`
         + blocLieu(r)
@@ -514,7 +515,14 @@ async function chargerRendezVousAdmin() {
         'Terminé': `Bonjour ${r.client_nom}, merci d'être passée pour votre "${r.type_vetement}" ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)}\n\nÀ bientôt pour une prochaine création !`,
         'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre rendez-vous du ${dateLisible} pour "${r.type_vetement}" a dû être annulé. N'hésitez pas à reprendre rendez-vous à une autre date.`
       };
-      const message = messages[statutActuel] || `Bonjour ${r.client_nom}, `;
+      // commande sur mesure sans rendez-vous (mesures connues) : messages sans date
+      const messagesSansRdv = {
+        'Nouvelle demande': `Bonjour ${r.client_nom}, nous avons bien reçu votre commande sur mesure pour "${r.type_vetement}". Nous revenons vers vous rapidement.`,
+        'Confirmé': `Bonjour ${r.client_nom}, votre commande sur mesure pour "${r.type_vetement}" est confirmée.${devisTexte}\n📞 Pour nous joindre : ${ATELIER.telephone}\n\nÀ bientôt !`,
+        'Terminé': `Bonjour ${r.client_nom}, votre "${r.type_vetement}" est prêt, merci pour votre confiance ! N'hésitez pas à laisser un avis : ${BASE_URL}avis.html?type=rendez_vous&nom=${encodeURIComponent(r.client_nom)}`,
+        'Annulé': `Bonjour ${r.client_nom}, nous sommes désolés, votre commande sur mesure pour "${r.type_vetement}" a dû être annulée. N'hésitez pas à nous recontacter.`
+      };
+      const message = (r.date_souhaitee ? messages : messagesSansRdv)[statutActuel] || `Bonjour ${r.client_nom}, `;
       const numero = r.client_telephone.replace(/[^0-9]/g, '');
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(message)}`, '_blank');
     });
