@@ -348,7 +348,8 @@ async function chargerCommandesAdmin() {
   tbody.innerHTML = data.map(c => `
     <tr>
       <td>${esc(c.reference || '—')}<br><span style="color:#665b51; font-size:11px;">${new Date(c.cree_le).toLocaleDateString('fr-FR')}</span></td>
-      <td>${esc(c.client_nom)}<br><span style="color:#665b51;">${esc(c.client_telephone)}</span></td>
+      <td>${esc(c.client_nom)}<br><span style="color:#665b51;">${esc(c.client_telephone)}</span>
+        <br><button class="lien-modifier-tel" data-table="commandes" data-id="${esc(c.id)}">Modifier le numéro</button></td>
       <td>${c.articles.length} article(s)<br><span style="color:#665b51; font-size:11px;">${esc(c.zone_livraison || '')}${c.moyen_paiement ? ' · ' + esc(c.moyen_paiement) : ''}</span></td>
       <td>${Number(c.total).toLocaleString('fr-FR')} GNF</td>
       <td>${c.commission_gnf ? Number(c.commission_gnf).toLocaleString('fr-FR') + ' GNF' : '—'}</td>
@@ -404,6 +405,25 @@ async function chargerCommandesAdmin() {
 // ===================== SUPPRESSION (commandes, rendez-vous) =====================
 // Supprime une ligne après confirmation. Si la base refuse sans erreur (aucune ligne supprimée),
 // c'est qu'il manque l'autorisation de suppression dans Supabase.
+// Corriger le numéro WhatsApp d'une cliente (commande ou rendez-vous)
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.lien-modifier-tel');
+  if (!btn) return;
+  const table = btn.dataset.table;
+  const cache = table === 'commandes' ? commandesCache : rdvCache;
+  const ligne = cache.find(x => x.id === btn.dataset.id);
+  if (!ligne) return;
+  const saisi = prompt('Nouveau numéro WhatsApp, avec l\'indicatif (ex : +224626607633) :', ligne.client_telephone || '');
+  if (saisi === null) return;
+  const chiffres = saisi.replace(/[^0-9]/g, '');
+  if (chiffres.length < 8) { alert('Numéro trop court. Mettez l\'indicatif du pays, par exemple +224 pour la Guinée.'); return; }
+  const numero = '+' + chiffres;
+  const { data, error } = await supabaseClient.from(table).update({ client_telephone: numero }).eq('id', ligne.id).select('id');
+  if (error) { alert('Erreur : ' + error.message); return; }
+  if (!data || data.length === 0) { alert("La modification a été refusée par la base (autorisation manquante dans Supabase)."); return; }
+  if (table === 'commandes') chargerCommandesAdmin(); else chargerRendezVousAdmin();
+});
+
 async function supprimerLigne(table, id, libelle, recharger) {
   if (!confirm(`Supprimer définitivement ${libelle} ?`)) return;
   const { data, error } = await supabaseClient.from(table).delete().eq('id', id).select('id');
@@ -441,7 +461,8 @@ async function chargerRendezVousAdmin() {
   tbody.innerHTML = data.map(r => `
     <tr>
       <td>${r.date_souhaitee ? new Date(r.date_souhaitee).toLocaleDateString('fr-FR') + ' ' + esc(r.heure_souhaitee || '') : 'Sans rendez-vous'}</td>
-      <td>${esc(r.client_nom)}<br><span style="color:#665b51;">${esc(r.client_telephone)}</span></td>
+      <td>${esc(r.client_nom)}<br><span style="color:#665b51;">${esc(r.client_telephone)}</span>
+        <br><button class="lien-modifier-tel" data-table="rendez_vous" data-id="${esc(r.id)}">Modifier le numéro</button></td>
       <td>${esc(r.type_vetement)}${r.modele_ref ? `<br><span style="color:#665b51; font-size:11px;">Catalogue : ${esc(r.modele_ref)}</span>` : ''}${r.photo_modele_url ? `<br><a href="${urlSure(r.photo_modele_url)}" target="_blank" style="color:var(--terracotta-dark); font-size:11px;">Voir photo jointe</a>` : ''}</td>
       <td>${esc(r.mode)}<br><span style="color:#665b51; font-size:11px;">${esc(r.moyen_paiement || '')}</span></td>
       <td><input type="number" class="input-devis" data-id="${esc(r.id)}" value="${esc(r.devis_gnf || '')}" placeholder="Montant" style="width:110px; padding:6px 8px; border-radius:6px; border:1px solid var(--line); font-size:12px;"></td>

@@ -139,8 +139,9 @@ function creerPanierDrawer() {
           <option value="33">🇫🇷 France +33</option>
           <option value="autre">🌍 Autre pays</option>
         </select>
-        <input type="tel" id="panier-telephone" placeholder="Numéro (ex: 622334455)" class="panier-input" maxlength="20" inputmode="tel" autocomplete="tel-national" style="margin-bottom:0; flex:1;">
+        <input type="tel" id="panier-telephone" placeholder="Numéro WhatsApp (ex: 622334455)" class="panier-input" maxlength="20" inputmode="tel" autocomplete="tel-national" style="margin-bottom:0; flex:1;">
       </div>
+      <p class="note-whatsapp">C'est sur ce numéro WhatsApp qu'on vous répond.</p>
       <input type="text" id="panier-indicatif-autre" placeholder="Indicatif du pays (ex: 32 pour la Belgique)" class="panier-input" style="display:none;">
       <select id="panier-zone" class="panier-input">
         <option value="Retrait à Conakry">Retrait à Conakry</option>
@@ -309,7 +310,7 @@ async function envoyerCommande() {
     return;
   }
   if (!nom || !telephone) {
-    alert('Merci de renseigner votre nom et votre numéro de téléphone.');
+    alert('Merci de renseigner votre nom et votre numéro WhatsApp.');
     return;
   }
   if (!telephoneValide(telephone)) {

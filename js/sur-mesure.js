@@ -269,7 +269,7 @@ async function envoyerDemandeSurMesure(e) {
   const modeleImage = modeles.length > 0 ? modeles[0].image_url : null;
 
   if (!nom || !telephone || !vetement) {
-    alert('Merci de remplir au moins votre nom, téléphone et le type de vêtement souhaité.');
+    alert('Merci de remplir au moins votre nom, votre numéro WhatsApp et le type de vêtement souhaité.');
     finEnvoi();
     return;
   }
